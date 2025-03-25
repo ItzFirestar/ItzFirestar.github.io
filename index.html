@@ -21,7 +21,7 @@
                 totalWeight += quarterWeights;
             }
             
-            if (numQuarters > 2 || (numQuarters == 2 && classType !== "AP")) {
+            if (numQuarters >= 2) {
                 let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
                 weightedSum += midtermGrade * midtermWeight;
                 totalWeight += midtermWeight;
