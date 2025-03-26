@@ -46,9 +46,9 @@
             let resultText = "";
             
             if (numQuarters == 3) {
-                remainingWeight = quarterWeights;
+                remainingWeight = quarterWeights + ((classType !== "AP") ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
-                resultText = "You need a " + requiredGrade.toFixed(2) + "% in Quarter 4 to achieve your desired grade.";
+                resultText = "You need a " + requiredGrade.toFixed(2) + "% in Quarter 4" + ((classType !== "AP") ? " and " + requiredGrade.toFixed(2) + "% on the final exam" : "") + " to achieve your desired grade.";
             } else if (numQuarters == 2 && !document.getElementById("midterm").value) {
                 remainingWeight = midtermWeight + (2 * quarterWeights) + ((classType !== "AP") ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
