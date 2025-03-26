@@ -15,11 +15,11 @@
   <h2>Grade Calculator</h2>
   
   <label for="quarters">Enter the number of quarters (1-4): </label>
-  <input type="number" id="quarters" min="1" max="4" onchange="checkMidterm()">
+  <input type="number" id="quarters" min="1" max="4" onchange="checkInputs()">
   <br>
   
   <label for="midterm">Enter Midterm grade (if applicable): </label>
-  <input type="number" id="midterm" min="0" max="100" onchange="checkMidterm()">
+  <input type="number" id="midterm" min="0" max="100" onchange="checkInputs()">
   <br>
   
   <label for="desiredGrade">Enter desired final grade: </label>
@@ -29,19 +29,15 @@
   <button id="calculateButton" class="button-disabled" disabled onclick="calculateGrade()">Calculate Final Grade</button>
   
   <script>
-    function checkMidterm() {
+    function checkInputs() {
       const quarters = document.getElementById('quarters').value;
       const midterm = document.getElementById('midterm').value;
       const button = document.getElementById('calculateButton');
       
-      if (quarters == 3 || quarters == 4) {
-        if (midterm === "") {
-          button.disabled = true;
-          button.classList.add('button-disabled');
-        } else {
-          button.disabled = false;
-          button.classList.remove('button-disabled');
-        }
+      // Disable the button if 3 or 4 quarters are entered but no midterm is provided
+      if ((quarters == 3 || quarters == 4) && midterm === "") {
+        button.disabled = true;
+        button.classList.add('button-disabled');
       } else {
         button.disabled = false;
         button.classList.remove('button-disabled');
