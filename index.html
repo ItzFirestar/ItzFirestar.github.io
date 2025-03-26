@@ -50,13 +50,13 @@
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
                 resultText = "You need a " + requiredGrade.toFixed(2) + "% in Quarter 4 to achieve your desired grade.";
             } else if (numQuarters == 2 && !document.getElementById("midterm").value) {
-                remainingWeight = (2 * quarterWeights);
-                requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
-                resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% in the next two quarters.";
-            } else if (numQuarters == 2 && document.getElementById("midterm").value) {
                 remainingWeight = midtermWeight + (2 * quarterWeights);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
                 resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% on the midterm and next two quarters.";
+            } else if (numQuarters == 2 && document.getElementById("midterm").value) {
+                remainingWeight = (2 * quarterWeights);
+                requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
+                resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% in the next two quarters.";
             } else if (numQuarters == 4 && classType !== "AP" && !document.getElementById("final").value) {
                 remainingWeight = finalExamWeight;
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
