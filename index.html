@@ -140,6 +140,17 @@
 
         // Add an event listener to handle changes to the class type dropdown
         document.getElementById("classType").addEventListener("change", toggleFinalField);
+
+        // Function to clear all fields
+        function clearFields() {
+            // Reset all inputs
+            document.querySelectorAll("input[type='number']").forEach(input => input.value = "");
+            document.getElementById("desiredGrade").value = "";
+            document.getElementById("classType").value = "CP"; // Reset class type to default (CP)
+            toggleFinalField(); // Recheck visibility of the Final field
+            document.getElementById("result").innerText = "";
+            document.getElementById("neededGrade").innerText = "";
+        }
     </script>
 </head>
 <body>
@@ -173,6 +184,8 @@
     </select><br><br>
     
     <button onclick="calculateFinalGrade()">Calculate Final Grade</button>
+    <button type="button" onclick="clearFields()">Clear All Fields</button><br><br>
+    
     <h3 id="result"></h3>
     <h3 id="neededGrade"></h3>
 </body>
