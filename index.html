@@ -124,15 +124,21 @@
         function toggleFinalField() {
             let classType = document.getElementById("classType").value;
             let finalField = document.getElementById("finalField");
+            
+            // Show or hide the final exam field based on the class type
             if (classType === "AP") {
-                finalField.style.display = "none";
+                finalField.style.display = "none";  // Hide the field for AP
             } else {
-                finalField.style.display = "block";
+                finalField.style.display = "block"; // Show the field for CP/Honors
             }
         }
-        
-        // Event listener to trigger the toggle function when the class type changes
-        window.onload = toggleFinalField;
+
+        // Call toggleFinalField when the page loads to check the initial selection
+        window.onload = function() {
+            toggleFinalField();  // Check if the final field should be shown or hidden
+        };
+
+        // Add an event listener to handle changes to the class type dropdown
         document.getElementById("classType").addEventListener("change", toggleFinalField);
     </script>
 </head>
@@ -154,6 +160,7 @@
     <label for="midterm">Midterm:</label>
     <input type="number" id="midterm" min="0" max="100"><br><br>
     
+    <!-- This is the Final Exam input, initially hidden -->
     <div id="finalField">
         <label for="final">Final Exam (CP/Honors only):</label>
         <input type="number" id="final" min="0" max="100"><br><br>
