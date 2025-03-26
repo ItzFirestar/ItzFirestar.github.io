@@ -38,21 +38,21 @@
             let finalGrade = (totalWeight > 0) ? (weightedSum / totalWeight) : 0;
             document.getElementById("result").innerText = "Final Grade: " + finalGrade.toFixed(2) + "%";
             
-            calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade);
+            calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights);
         }
         
-        function calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade) {
-            let remainingWeight, requiredGrade;
+        function calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights) {
+            let remainingWeight = 0, requiredGrade = 0;
             let resultText = "";
             
             if (numQuarters == 3) {
-                remainingWeight = (classType === "AP") ? 22 : 20;
+                remainingWeight = quarterWeights;
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
                 resultText = "You need a " + requiredGrade.toFixed(2) + "% in Quarter 4 to achieve your desired grade.";
             } else if (numQuarters == 2) {
                 remainingWeight = midtermWeight + (2 * quarterWeights);
-                requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
-                resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% across the midterm and next two quarters.";
+                let midtermNeeded = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
+                resultText = "To achieve your desired grade, you need at least " + midtermNeeded.toFixed(2) + "% on the midterm and next two quarters.";
             } else if (numQuarters == 4 && classType !== "AP") {
                 remainingWeight = finalExamWeight;
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
