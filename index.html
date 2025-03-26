@@ -34,11 +34,8 @@
       const midterm = document.getElementById('midterm').value;
       const button = document.getElementById('calculateButton');
       
-      console.log("Quarters: " + quarters);
-      console.log("Midterm: " + midterm);
-
-      // If 3 or 4 quarters are provided, and the midterm is not entered, disable the button
-      if ((quarters == 3 || quarters == 4) && !midterm) {
+      // Disable the button if 3 or 4 quarters are entered but no midterm is provided
+      if ((quarters == 3 || quarters == 4) && midterm === "") {
         button.disabled = true;
         button.classList.add('button-disabled');
       } else {
@@ -48,7 +45,7 @@
     }
     
     function calculateGrade() {
-      // Placeholder for the logic to calculate the final grade
+      // Your logic to calculate the final grade goes here
       alert("Calculating grade...");
     }
   </script>
