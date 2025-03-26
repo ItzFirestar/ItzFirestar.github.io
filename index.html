@@ -8,6 +8,7 @@
         function calculateFinalGrade() {
             let numQuarters = parseInt(document.getElementById("numQuarters").value);
             let classType = document.getElementById("classType").value;
+            let desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
             
             let quarterWeights = (classType === "AP") ? 22 : 20;
             let midtermWeight = (classType === "AP") ? 12 : 10;
@@ -21,20 +22,44 @@
                 totalWeight += quarterWeights;
             }
             
+            let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
+            let finalExamGrade = parseFloat(document.getElementById("final").value) || 0;
+            
             if (numQuarters >= 2) {
-                let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
                 weightedSum += midtermGrade * midtermWeight;
                 totalWeight += midtermWeight;
             }
             
             if (numQuarters == 4 && classType !== "AP") {
-                let finalExamGrade = parseFloat(document.getElementById("final").value) || 0;
                 weightedSum += finalExamGrade * finalExamWeight;
                 totalWeight += finalExamWeight;
             }
             
             let finalGrade = (totalWeight > 0) ? (weightedSum / totalWeight) : 0;
             document.getElementById("result").innerText = "Final Grade: " + finalGrade.toFixed(2) + "%";
+            
+            calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade);
+        }
+        
+        function calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade) {
+            let remainingWeight, requiredGrade;
+            let resultText = "";
+            
+            if (numQuarters == 3) {
+                remainingWeight = (classType === "AP") ? 22 : 20;
+                requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
+                resultText = "You need a " + requiredGrade.toFixed(2) + "% in Quarter 4 to achieve your desired grade.";
+            } else if (numQuarters == 2) {
+                remainingWeight = midtermWeight + (2 * quarterWeights);
+                requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
+                resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% across the midterm and next two quarters.";
+            } else if (numQuarters == 4 && classType !== "AP") {
+                remainingWeight = finalExamWeight;
+                requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
+                resultText = "You need a " + requiredGrade.toFixed(2) + "% on the final exam to achieve your desired grade.";
+            }
+            
+            document.getElementById("neededGrade").innerText = resultText;
         }
     </script>
 </head>
@@ -48,6 +73,9 @@
         <option value="CP">CP/Honors</option>
         <option value="AP">AP</option>
     </select><br><br>
+    
+    <label for="desiredGrade">Desired Final Grade (%):</label>
+    <input type="number" id="desiredGrade" min="0" max="100"><br><br>
     
     <label for="q1">Quarter 1:</label>
     <input type="number" id="q1" min="0" max="100"><br>
@@ -66,5 +94,6 @@
     
     <button onclick="calculateFinalGrade()">Calculate Final Grade</button>
     <h3 id="result"></h3>
+    <h3 id="neededGrade"></h3>
 </body>
 </html>
