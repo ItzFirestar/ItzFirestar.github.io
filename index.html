@@ -4,12 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Grade Calculator</title>
-  <style>
-    .button-disabled {
-      background-color: grey;
-      cursor: not-allowed;
-    }
-  </style>
+  
 </head>
 <body>
   <h2>Grade Calculator</h2>
@@ -34,15 +29,7 @@
       const midterm = document.getElementById('midterm').value;
       const button = document.getElementById('calculateButton');
       
-      // Disable the button if 3 or 4 quarters are entered but no midterm is provided
-      if ((quarters == 3 || quarters == 4) && midterm === "") {
-        button.disabled = true;
-        button.classList.add('button-disabled');
-      } else {
-        button.disabled = false;
-        button.classList.remove('button-disabled');
-      }
-    }
+      
     
     function calculateGrade() {
       // Your logic to calculate the final grade goes here
