@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Half-Semester Final Grade Calculator</title>
+    <title>Half-Semester Grade Calculator</title>
     <style>
         body {
             background-color: #2E2E2E;
             color: white;
             font-family: Arial, sans-serif;
         }
+
         h2, h3 {
             color: #F1F1F1;
         }
+
         label {
             color: #D1D1D1;
         }
+
         input, button {
             background-color: #3B3B3B;
             color: white;
@@ -23,31 +26,52 @@
             border-radius: 5px;
             padding: 8px;
             margin: 5px 0;
+            width: 250px;
         }
+
         button {
             cursor: pointer;
             background-color: #4CAF50;
             border: none;
         }
+
         button:hover {
             background-color: #45a049;
         }
+
+        input[type="number"] {
+            width: 100px;
+        }
     </style>
     <script>
-        function calculateHalfSemesterFinal() {
+        function calculateNeededFinalGrade() {
             let quarter1 = parseFloat(document.getElementById("q1").value) || 0;
-            let desiredGrade = parseFloat(document.getElementById("desiredGrade").value) || 0;
-            
-            let weightedQ1 = quarter1 * 0.4;
-            let remainingWeight = 0.6; 
-            
-            let neededScore = ((desiredGrade - weightedQ1) / remainingWeight).toFixed(2);
-            
-            document.getElementById("result").innerText = "To achieve your desired grade, you need an average of " + neededScore + "% across Quarter 2 and the Final Exam.";
+            let quarter2 = parseFloat(document.getElementById("q2").value) || 0;
+            let desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+
+            if (isNaN(desiredGrade) || desiredGrade < 0 || desiredGrade > 100) {
+                alert("Please enter a valid desired final grade between 0 and 100.");
+                return;
+            }
+
+            let currentWeighted = (quarter1 * 0.4) + (quarter2 * 0.4);
+            let neededFinalExam = ((desiredGrade - currentWeighted) / 0.2);
+
+            let resultText = "";
+            if (neededFinalExam > 100) {
+                resultText = "Unfortunately, it's not possible to achieve your desired grade.";
+            } else if (neededFinalExam < 0) {
+                resultText = "You have already achieved your desired grade!";
+            } else {
+                resultText = "You need a " + neededFinalExam.toFixed(2) + "% on the Final Exam.";
+            }
+
+            document.getElementById("result").innerText = resultText;
         }
-        
+
         function clearFields() {
             document.getElementById("q1").value = "";
+            document.getElementById("q2").value = "";
             document.getElementById("desiredGrade").value = "";
             document.getElementById("result").innerText = "";
         }
@@ -55,18 +79,22 @@
 </head>
 <body>
     <h2>Half-Semester Final Grade Calculator</h2>
-    
-    <label for="q1">Quarter 1 Grade:</label>
-    <input type="number" id="q1" min="0" max="100"><br><br>
-    
+
+    <label for="q1">Quarter 1 Grade (%):</label>
+    <input type="number" id="q1" min="0" max="100"><br>
+
+    <label for="q2">Quarter 2 Grade (%):</label>
+    <input type="number" id="q2" min="0" max="100"><br>
+
     <label for="desiredGrade">Desired Final Grade (%):</label>
     <input type="number" id="desiredGrade" min="0" max="100"><br><br>
-    
-    <button onclick="calculateHalfSemesterFinal()">Calculate</button>
-    <button onclick="clearFields()">Clear All Fields</button><br><br>
-    
+
+    <button onclick="calculateNeededFinalGrade()">Calculate Needed Final Exam Score</button>
+    <button onclick="clearFields()">Clear All Fields</button>
+
     <h3 id="result"></h3>
-    
-    <a href="index.html" style="color: lightblue;">Back to Full-Year Calculator</a>
+
+    <br>
+    <a href="index.html" style="color: lightblue;">Return to Full-Year Calculator</a>
 </body>
 </html>
