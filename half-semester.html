@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Half-Semester Grade Calculator</title>
+    <style>
+        /* Base Styles */
+        :root {
+            --bg-color: #2E2E2E;
+            --card-bg: #252525;
+            --input-bg: #3B3B3B;
+            --text-color: #FFFFFF;
+            --text-muted: #D1D1D1;
+            --text-secondary: #A0A0A0;
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --border-color: #555555;
+            --accent-color: #4ADE80;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation */
+        nav {
+            background-color: #1A1A1A;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #333333;
+            color: var(--text-color);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            flex-grow: 1;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        /* Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 1rem;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: #666666;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #555555;
+        }
+
+        /* Results */
+        .result-box {
+            background-color: var(--input-bg);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .result-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Info Section */
+        .info-text {
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--card-bg);
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+            font-size: 0.875rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="nav-logo">Grade Calculator</div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Full Year Calculator</a>
+                <a href="half-semester.html" class="nav-link active">Half-Semester Calculator</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Half-Semester Grade Calculator</h1>
+
+        <div class="card">
+            <h2 class="card-title">Enter Your Grades</h2>
+
+            <div class="form-grid">
+                <div>
+                    <div class="form-group">
+                        <label for="q1" class="form-label">Quarter 1 Grade (%)</label>
+                        <input type="number" id="q1" class="form-input" min="0" max="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="q2" class="form-label">Quarter 2 Grade (%)</label>
+                        <input type="number" id="q2" class="form-input" min="0" max="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="desiredGrade" class="form-label">Desired Final Grade (%)</label>
+                        <input type="number" id="desiredGrade" class="form-input" min="0" max="100">
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="section-title">Half-Semester Grading</h3>
+                    <p class="info-text">
+                        In half-semester courses, each quarter is worth 40% of your grade, 
+                        and the final exam is worth 20%.
+                    </p>
+
+                    <div class="button-group">
+                        <button id="calculateBtn" class="btn btn-primary">Calculate Needed Final Exam Score</button>
+                        <button id="clearBtn" class="btn btn-secondary">Clear All Fields</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resultContainer" class="result-box" style="display: none;">
+                <h3 id="result" class="result-title"></h3>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">How to Use This Calculator</h2>
+            <div class="info-text">
+                <p>1. Enter your grades for Quarter 1 and Quarter 2.</p>
+                <p>2. Enter your desired final grade.</p>
+                <p>3. Click "Calculate" to see what score you need on the final exam.</p>
+                <p>4. If the calculator shows it's not possible to achieve your desired grade, 
+                   consider adjusting your goal or speaking with your instructor.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        Created by Advaith S, 2025
+    </footer>
+
+    <script>
+        // DOM Elements
+        const q1Input = document.getElementById('q1');
+        const q2Input = document.getElementById('q2');
+        const desiredGradeInput = document.getElementById('desiredGrade');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultElement = document.getElementById('result');
+
+        // Event Listeners
+        calculateBtn.addEventListener('click', calculateNeededFinalGrade);
+        clearBtn.addEventListener('click', clearFields);
+
+        // Functions
+        function calculateNeededFinalGrade() {
+            let quarter1 = parseFloat(q1Input.value) || 0;
+            let quarter2 = parseFloat(q2Input.value) || 0;
+            let desiredGrade = parseFloat(desiredGradeInput.value);
+
+            if (isNaN(desiredGrade) || desiredGrade < 0 || desiredGrade > 100) {
+                alert("Please enter a valid desired final grade between 0 and 100.");
+                return;
+            }
+
+            let currentWeighted = (quarter1 * 0.4) + (quarter2 * 0.4);
+            let neededFinalExam = ((desiredGrade - currentWeighted) / 0.2);
+
+            let resultText = "";
+            if (neededFinalExam > 100) {
+                resultText = "Unfortunately, it's not possible to achieve your desired grade.";
+            } else if (neededFinalExam < 0) {
+                resultText = "You have already achieved your desired grade!";
+            } else {
+                resultText = "You need a " + neededFinalExam.toFixed(2) + "% on the Final Exam.";
+            }
+
+            resultElement.textContent = resultText;
+            resultContainer.style.display = 'block';
+        }
+
+        function clearFields() {
+            q1Input.value = '';
+            q2Input.value = '';
+            desiredGradeInput.value = '';
+            resultElement.textContent = '';
+            resultContainer.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
+
