@@ -3,56 +3,382 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Final Grade Calculator</title>
-    <a href="half_semester_calculator.html" style="color: lightblue;">Half-Semester Grade Calculator</a>
+    <title>Grade Calculator</title>
     <style>
+        /* Base Styles */
+        :root {
+            --bg-color: #2E2E2E;
+            --card-bg: #252525;
+            --input-bg: #3B3B3B;
+            --text-color: #FFFFFF;
+            --text-muted: #D1D1D1;
+            --text-secondary: #A0A0A0;
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --border-color: #555555;
+            --accent-color: #4ADE80;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #2E2E2E;
-            color: white;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: Arial, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        h2, h3 {
-            color: #F1F1F1;
+        /* Navigation */
+        nav {
+            background-color: #1A1A1A;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        label {
-            color: #D1D1D1;
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        input, select, button {
-            background-color: #3B3B3B;
+        .nav-logo {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #333333;
+            color: var(--text-color);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-color);
             color: white;
-            border: 1px solid #555;
-            border-radius: 5px;
-            padding: 8px;
-            margin: 5px 0;
-            width: 250px;
         }
 
-        button {
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            flex-grow: 1;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        /* Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
             cursor: pointer;
-            background-color: #4CAF50;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 1rem;
             border: none;
+            transition: background-color 0.2s;
         }
 
-        button:hover {
-            background-color: #45a049;
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
         }
 
-        input[type="number"], select {
-            width: 100px;
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
         }
 
-        #finalField {
-            display: none;
+        .btn-secondary {
+            background-color: #666666;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #555555;
+        }
+
+        /* Results */
+        .result-box {
+            background-color: var(--input-bg);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .result-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-message {
+            color: var(--text-muted);
+        }
+
+        /* Info Section */
+        .info-text {
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--card-bg);
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+            font-size: 0.875rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
         }
     </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="nav-logo">Grade Calculator</div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">Full Year Calculator</a>
+                <a href="half-semester.html" class="nav-link">Half-Semester Calculator</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Full Year Grade Calculator</h1>
+
+        <div class="card">
+            <h2 class="card-title">Enter Your Grades</h2>
+
+            <div class="form-grid">
+                <div>
+                    <div class="form-group">
+                        <label for="desiredGrade" class="form-label">Desired Final Grade (%)</label>
+                        <input type="number" id="desiredGrade" class="form-input" min="0" max="100">
+                    </div>
+
+                    <div class="form-group">
+                        <h3 class="section-title">Quarter Grades</h3>
+                        <div class="form-group">
+                            <label for="q1" class="form-label">Quarter 1</label>
+                            <input type="number" id="q1" class="form-input" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="q2" class="form-label">Quarter 2</label>
+                            <input type="number" id="q2" class="form-input" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="q3" class="form-label">Quarter 3</label>
+                            <input type="number" id="q3" class="form-input" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="q4" class="form-label">Quarter 4</label>
+                            <input type="number" id="q4" class="form-input" min="0" max="100">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-group">
+                        <label for="midterm" class="form-label">Midterm</label>
+                        <input type="number" id="midterm" class="form-input" min="0" max="100">
+                    </div>
+
+                    <div class="form-group" id="finalField">
+                        <label for="final" class="form-label">Final Exam (CP/Honors only)</label>
+                        <input type="number" id="final" class="form-input" min="0" max="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="classType" class="form-label">Class Type</label>
+                        <select id="classType" class="form-select">
+                            <option value="CP">CP/Honors</option>
+                            <option value="AP">AP</option>
+                        </select>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="calculateBtn" class="btn btn-primary">Calculate Final Grade</button>
+                        <button id="clearBtn" class="btn btn-secondary">Clear All Fields</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resultContainer" class="result-box" style="display: none;">
+                <h3 id="result" class="result-title"></h3>
+                <p id="neededGrade" class="result-message"></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">How Grades Are Calculated</h2>
+            <p class="info-text"><strong>CP/Honors Classes:</strong> Each quarter is worth 20%, midterm is 10%, and final exam is 10%.</p>
+            <p class="info-text"><strong>AP Classes:</strong> Each quarter is worth 22%, midterm is 12%, and there is no final exam.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        Created by Advaith S, 2025
+    </footer>
+
     <script>
+        // DOM Elements
+        const desiredGradeInput = document.getElementById('desiredGrade');
+        const q1Input = document.getElementById('q1');
+        const q2Input = document.getElementById('q2');
+        const q3Input = document.getElementById('q3');
+        const q4Input = document.getElementById('q4');
+        const midtermInput = document.getElementById('midterm');
+        const finalInput = document.getElementById('final');
+        const classTypeSelect = document.getElementById('classType');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultElement = document.getElementById('result');
+        const neededGradeElement = document.getElementById('neededGrade');
+        const finalField = document.getElementById('finalField');
+
+        // Event Listeners
+        calculateBtn.addEventListener('click', calculateFinalGrade);
+        clearBtn.addEventListener('click', clearFields);
+        classTypeSelect.addEventListener('change', toggleFinalField);
+
+        // Initialize
+        toggleFinalField();
+
+        // Functions
+        function getNumQuarters() {
+            let numQuarters = 0;
+            if (q1Input.value !== '') numQuarters++;
+            if (q2Input.value !== '') numQuarters++;
+            if (q3Input.value !== '') numQuarters++;
+            if (q4Input.value !== '') numQuarters++;
+            return numQuarters;
+        }
+
+        function toggleFinalField() {
+            const classType = classTypeSelect.value;
+            if (classType === 'AP') {
+                finalField.style.display = 'none';
+            } else {
+                finalField.style.display = 'block';
+            }
+        }
+
         function calculateFinalGrade() {
             let numQuarters = getNumQuarters();
-            let classType = document.getElementById("classType").value;
-            let desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+            let classType = classTypeSelect.value;
+            let desiredGrade = parseFloat(desiredGradeInput.value);
             
             let quarterWeights = (classType === "AP") ? 22 : 20;
             let midtermWeight = (classType === "AP") ? 12 : 10;
@@ -60,42 +386,34 @@
             
             let totalWeight = 0, weightedSum = 0;
             
-            for (let i = 1; i <= numQuarters; i++) {
-                let quarterGrade = parseFloat(document.getElementById("q" + i).value) || 0;
+            const quarters = [q1Input, q2Input, q3Input, q4Input];
+            for (let i = 0; i < numQuarters; i++) {
+                let quarterGrade = parseFloat(quarters[i].value) || 0;
                 weightedSum += quarterGrade * quarterWeights;
                 totalWeight += quarterWeights;
             }
             
-            let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
-            let finalExamGrade = parseFloat(document.getElementById("final").value) || 0;
+            let midtermGrade = parseFloat(midtermInput.value) || 0;
+            let finalExamGrade = parseFloat(finalInput.value) || 0;
             
-            if (numQuarters >= 3 || (numQuarters == 2 && document.getElementById("midterm").value)) {
+            if (numQuarters >= 3 || (numQuarters == 2 && midtermInput.value !== '')) {
                 weightedSum += midtermGrade * midtermWeight;
                 totalWeight += midtermWeight;
             }
             
-            if (numQuarters == 4 && classType !== "AP" && document.getElementById("final").value) {
+            if (numQuarters == 4 && classType !== "AP" && finalInput.value !== '') {
                 weightedSum += finalExamGrade * finalExamWeight;
                 totalWeight += finalExamWeight;
             }
             
             let finalGrade = (totalWeight > 0) ? (weightedSum / totalWeight) : 0;
-            document.getElementById("result").innerText = "Final Grade: " + finalGrade.toFixed(2) + "%";
+            resultElement.textContent = "Final Grade: " + finalGrade.toFixed(2) + "%";
             
             calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights);
+            
+            resultContainer.style.display = 'block';
         }
-        
-        function getNumQuarters() {
-            let numQuarters = 0;
-            for (let i = 1; i <= 4; i++) {
-                let quarterGrade = document.getElementById("q" + i).value;
-                if (quarterGrade !== "") {
-                    numQuarters++;
-                }
-            }
-            return numQuarters;
-        }
-        
+
         function calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights) {
             let remainingWeight = 0, requiredGrade = 0;
             let resultText = "";
@@ -104,91 +422,38 @@
                 remainingWeight = quarterWeights + ((classType !== "AP") ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
                 resultText = "You need a " + requiredGrade.toFixed(2) + "% in Quarter 4" + ((classType !== "AP") ? " and " + requiredGrade.toFixed(2) + "% on the final exam" : "") + " to achieve your desired grade.";
-            } else if (numQuarters == 2 && !document.getElementById("midterm").value) {
+            } else if (numQuarters == 2 && midtermInput.value === '') {
                 remainingWeight = midtermWeight + (2 * quarterWeights) + ((classType !== "AP") ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
                 resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% on the midterm, next two quarters" + ((classType !== "AP") ? " and the final exam." : ".");
-            } else if (numQuarters == 2 && document.getElementById("midterm").value) {
+            } else if (numQuarters == 2 && midtermInput.value !== '') {
                 remainingWeight = (2 * quarterWeights) + ((classType !== "AP") ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
                 resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% in the next two quarters" + ((classType !== "AP") ? " and the final exam." : ".");
-            } else if (numQuarters == 4 && classType !== "AP" && !document.getElementById("final").value) {
+            } else if (numQuarters == 4 && classType !== "AP" && finalInput.value === '') {
                 remainingWeight = finalExamWeight;
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
                 resultText = "You need a " + requiredGrade.toFixed(2) + "% on the final exam to achieve your desired grade.";
             }
             
-            document.getElementById("neededGrade").innerText = resultText;
+            neededGradeElement.textContent = resultText;
         }
 
-        // Function to handle the visibility of the final exam field
-        function toggleFinalField() {
-            let classType = document.getElementById("classType").value;
-            let finalField = document.getElementById("finalField");
-            
-            // Show or hide the final exam field based on the class type
-            if (classType === "AP") {
-                finalField.style.display = "none";  // Hide the field for AP
-            } else {
-                finalField.style.display = "block"; // Show the field for CP/Honors
-            }
-        }
-
-        // Call toggleFinalField when the page loads to check the initial selection
-        window.onload = function() {
-            toggleFinalField();  // Check if the final field should be shown or hidden
-        };
-
-        // Add an event listener to handle changes to the class type dropdown
-        document.getElementById("classType").addEventListener("change", toggleFinalField);
-
-        // Function to clear all fields
         function clearFields() {
-            // Reset all inputs
-            document.querySelectorAll("input[type='number']").forEach(input => input.value = "");
-            document.getElementById("desiredGrade").value = "";
-            document.getElementById("classType").value = "CP"; // Reset class type to default (CP)
-            toggleFinalField(); // Recheck visibility of the Final field
-            document.getElementById("result").innerText = "";
-            document.getElementById("neededGrade").innerText = "";
+            desiredGradeInput.value = '';
+            q1Input.value = '';
+            q2Input.value = '';
+            q3Input.value = '';
+            q4Input.value = '';
+            midtermInput.value = '';
+            finalInput.value = '';
+            classTypeSelect.value = 'CP';
+            resultElement.textContent = '';
+            neededGradeElement.textContent = '';
+            resultContainer.style.display = 'none';
+            toggleFinalField();
         }
     </script>
-</head>
-<body>
-    <h2>Final Grade Calculator</h2>
-    
-    <label for="desiredGrade">Desired Final Grade (%):</label>
-    <input type="number" id="desiredGrade" min="0" max="100"><br><br>
-    
-    <label for="q1">Quarter 1:</label>
-    <input type="number" id="q1" min="0" max="100"><br>
-    <label for="q2">Quarter 2:</label>
-    <input type="number" id="q2" min="0" max="100"><br>
-    <label for="q3">Quarter 3:</label>
-    <input type="number" id="q3" min="0" max="100"><br>
-    <label for="q4">Quarter 4:</label>
-    <input type="number" id="q4" min="0" max="100"><br><br>
-    
-    <label for="midterm">Midterm:</label>
-    <input type="number" id="midterm" min="0" max="100"><br><br>
-    
-    <!-- This is the Final Exam input, initially hidden -->
-    <div id="finalField">
-        <label for="final">Final Exam (CP/Honors only):</label>
-        <input type="number" id="final" min="0" max="100"><br><br>
-    </div>
-    
-    <label for="classType">Class Type:</label>
-    <select id="classType">
-        <option value="CP">CP/Honors</option>
-        <option value="AP">AP</option>
-    </select><br><br>
-    
-    <button onclick="calculateFinalGrade()">Calculate Final Grade</button>
-    <button type="button" onclick="clearFields()">Clear All Fields</button><br><br>
-    
-    <h3 id="result"></h3>
-    <h3 id="neededGrade"></h3>
 </body>
 </html>
 
