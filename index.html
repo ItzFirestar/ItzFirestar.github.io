@@ -278,30 +278,6 @@
             font-size: 0.9rem;
         }
 
-        .grade-pairs-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-            background-color: var(--input-bg);
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .grade-pairs-table th, .grade-pairs-table td {
-            padding: 0.75rem;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .grade-pairs-table th {
-            background-color: var(--secondary-bg);
-            font-weight: 600;
-        }
-
-        .grade-pairs-table tr:last-child td {
-            border-bottom: none;
-        }
-
         .grade-pairs-section {
             display: none;
             background-color: var(--secondary-bg);
@@ -440,9 +416,6 @@
                     return;
                 }
                 
-                // Calculate grade pairs
-                calculateGradePairs(currentWeightedSum, desiredGrade);
-                
                 // Calculate optimal combinations
                 calculateOptimalCombinations(currentWeightedSum, desiredGrade);
                 
@@ -487,52 +460,6 @@
             }
             
             document.getElementById("neededGrade").innerText = resultText;
-        }
-
-        function calculateGradePairs(currentWeightedSum, desiredGrade) {
-            // Clear previous results
-            const tableBody = document.getElementById('gradePairsTableBody');
-            tableBody.innerHTML = '';
-            
-            // Calculate the target sum needed from Q4 and Final Exam
-            const targetSum = (desiredGrade * 100) - currentWeightedSum;
-            
-            // Generate grade pairs
-            const pairs = [];
-            
-            // Q4 has 20% weight, Final has 10% weight
-            // For each possible Q4 grade (in increments of 10), calculate required Final grade
-            for (let q4 = 100; q4 >= 0; q4 -= 10) {
-                const q4Contribution = q4 * 20;
-                const finalNeeded = (targetSum - q4Contribution) / 10;
-                
-                // Only include valid pairs (final between 0 and 100)
-                if (finalNeeded >= 0 && finalNeeded <= 100) {
-                    pairs.push({
-                        q4: q4,
-                        final: Math.round(finalNeeded)
-                    });
-                }
-            }
-            
-            // Add rows to the table
-            pairs.forEach(pair => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${pair.q4}%</td>
-                    <td>${pair.final}%</td>
-                `;
-                tableBody.appendChild(row);
-            });
-            
-            // If no valid pairs were found
-            if (pairs.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="2">No valid grade combinations found</td>
-                `;
-                tableBody.appendChild(row);
-            }
         }
 
         function calculateOptimalCombinations(currentWeightedSum, desiredGrade) {
@@ -728,22 +655,6 @@
                         </div>
                     </div>
                 </div>
-                
-                <p>Other possible combinations of Quarter 4 and Final Exam grades that will achieve your desired final grade:</p>
-                
-                <table class="grade-pairs-table">
-                    <thead>
-                        <tr>
-                            <th>Quarter 4</th>
-                            <th>Final Exam</th>
-                        </tr>
-                    </thead>
-                    <tbody id="gradePairsTableBody">
-                        <!-- Grade pairs will be inserted here -->
-                    </tbody>
-                </table>
-                
-                <p class="mt-4">Note: These are approximate values. Actual grades may vary slightly due to rounding.</p>
             </div>
         </div>
     </div>
