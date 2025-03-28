@@ -18,6 +18,7 @@
             --border-color: #555;
             --card-bg: #333333;
             --nav-bg: #222222;
+            --highlight-bg: rgba(76, 175, 80, 0.15);
         }
 
         * {
@@ -313,6 +314,45 @@
             color: var(--accent-color);
             margin-bottom: 1rem;
         }
+
+        .optimal-combo {
+            background-color: var(--highlight-bg);
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            border-radius: 5px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .optimal-combo h4 {
+            color: var(--accent-color);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .optimal-grades {
+            display: flex;
+            justify-content: space-around;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .optimal-grade-item {
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .optimal-grade-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .optimal-grade-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
     </style>
     <script>
         function toggleMenu() {
@@ -388,6 +428,9 @@
                 
                 // Calculate grade pairs
                 calculateGradePairs(currentWeightedSum, desiredGrade);
+                
+                // Calculate optimal combination (lowest Q4, highest Final)
+                calculateOptimalCombination(currentWeightedSum, desiredGrade);
                 
                 // Show the grade pairs section
                 gradePairsSection.style.display = 'block';
@@ -475,6 +518,32 @@
                     <td colspan="2">No valid grade combinations found</td>
                 `;
                 tableBody.appendChild(row);
+            }
+        }
+
+        function calculateOptimalCombination(currentWeightedSum, desiredGrade) {
+            // Calculate the target sum needed from Q4 and Final Exam
+            const targetSum = (desiredGrade * 100) - currentWeightedSum;
+            
+            // Set Final Exam to maximum (100%)
+            const finalExamGrade = 100;
+            const finalExamContribution = finalExamGrade * 10;
+            
+            // Calculate the minimum Q4 grade needed
+            const minQ4Needed = (targetSum - finalExamContribution) / 20;
+            
+            // Check if this is a valid combination
+            if (minQ4Needed >= 0 && minQ4Needed <= 100) {
+                // Round to 2 decimal places for display
+                const roundedQ4 = Math.max(0, Math.ceil(minQ4Needed * 100) / 100);
+                
+                // Update the optimal combination display
+                document.getElementById('optimalQ4').innerText = roundedQ4.toFixed(2) + '%';
+                document.getElementById('optimalFinal').innerText = finalExamGrade + '%';
+                document.getElementById('optimalCombo').style.display = 'block';
+            } else {
+                // Hide the optimal combination section if no valid combination exists
+                document.getElementById('optimalCombo').style.display = 'none';
             }
         }
 
@@ -590,7 +659,25 @@
             <!-- Grade Pairs Section -->
             <div id="gradePairsSection" class="grade-pairs-section">
                 <h3>Possible Grade Combinations</h3>
-                <p>These are possible combinations of Quarter 4 and Final Exam grades that will achieve your desired final grade:</p>
+                
+                <!-- Optimal Combination Section -->
+                <div id="optimalCombo" class="optimal-combo">
+                    <h4>Optimal Grade Strategy</h4>
+                    <p>This combination gives you the lowest possible Quarter 4 grade while maximizing your Final Exam grade:</p>
+                    
+                    <div class="optimal-grades">
+                        <div class="optimal-grade-item">
+                            <div class="optimal-grade-value" id="optimalQ4">0%</div>
+                            <div class="optimal-grade-label">Quarter 4 (Minimum)</div>
+                        </div>
+                        <div class="optimal-grade-item">
+                            <div class="optimal-grade-value" id="optimalFinal">100%</div>
+                            <div class="optimal-grade-label">Final Exam (Maximum)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <p>These are other possible combinations of Quarter 4 and Final Exam grades that will achieve your desired final grade:</p>
                 
                 <table class="grade-pairs-table">
                     <thead>
