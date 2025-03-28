@@ -241,46 +241,53 @@
         }
 
         /* Graph container styles */
-        .graph-container {
+        .desmos-section {
             display: none;
             background-color: var(--secondary-bg);
             border-radius: 8px;
             padding: 1.5rem;
             margin-top: 1.5rem;
-            height: 400px;
-            position: relative;
         }
 
-        .graph-title {
+        .desmos-section h3 {
             color: var(--accent-color);
             margin-bottom: 1rem;
-            text-align: center;
         }
 
-        .graph-instructions {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-            text-align: center;
-            font-style: italic;
+        .desmos-section p {
+            margin-bottom: 1rem;
         }
 
-        .graph-reset {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        .equation {
             background-color: var(--input-bg);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            z-index: 10;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+            text-align: center;
+            font-size: 1.2rem;
+            overflow-x: auto;
         }
 
-        .graph-reset:hover {
-            background-color: var(--border-color);
+        .desmos-link {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .desmos-link:hover {
+            background-color: var(--accent-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .desmos-link i {
+            margin-right: 0.5rem;
         }
 
         @media (max-width: 768px) {
@@ -317,8 +324,9 @@
                 min-width: 100%;
             }
 
-            .graph-container {
-                height: 300px;
+            .equation {
+                font-size: 1rem;
+                padding: 0.75rem;
             }
         }
 
@@ -373,27 +381,47 @@
             
             calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights);
             
-            // Check if we should show the graph
-            if (desiredGrade && !isNaN(desiredGrade) && classType !== "AP") {
-                // Calculate the weighted sum for the graph
-                let graphWeightedSum = 0;
+            // Check if we should show the Desmos section
+            const desmosSection = document.getElementById('desmosSection');
+            
+            // Only show for CP/Honors classes when desired grade is entered and Q4 and Final are blank
+            if (desiredGrade && !isNaN(desiredGrade) && 
+                classType !== "AP" && 
+                document.getElementById("q4").value === "" && 
+                document.getElementById("final").value === "") {
+                
+                // Calculate the weighted sum for the equation
                 let q1Grade = parseFloat(document.getElementById("q1").value) || 0;
                 let q2Grade = parseFloat(document.getElementById("q2").value) || 0;
                 let q3Grade = parseFloat(document.getElementById("q3").value) || 0;
                 let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
                 
-                graphWeightedSum = (q1Grade * 20) + (q2Grade * 20) + (q3Grade * 20) + (midtermGrade * 10);
+                let W = (q1Grade * 20) + (q2Grade * 20) + (q3Grade * 20) + (midtermGrade * 10);
+                let D = desiredGrade;
                 
-                // Only show graph if we have at least Q1, Q2, Q3 grades
-                if (document.getElementById("q1").value && 
-                    document.getElementById("q2").value && 
-                    document.getElementById("q3").value) {
-                    updateGraph(graphWeightedSum, desiredGrade);
-                } else {
-                    document.getElementById('graphContainer').style.display = 'none';
+                // Check if equation would be valid
+                if (100 * D - W <= 0) {
+                    desmosSection.style.display = 'none';
+                    return;
                 }
+                
+                // Simplify the equation y = (10/(100*D-W)) - 2*x
+                let coefficient = 10 / (100 * D - W);
+                let equation = `y = ${coefficient.toFixed(6)} - 2x`;
+                
+                // Create Desmos URL with the equation
+                let desmosUrl = `https://www.desmos.com/calculator/?expression=${encodeURIComponent(equation)}`;
+                
+                // Update the equation and link
+                document.getElementById('equation').innerText = equation;
+                document.getElementById('desmosLink').href = desmosUrl;
+                document.getElementById('weightedSum').innerText = W;
+                document.getElementById('desiredGradeValue').innerText = D;
+                
+                // Show the Desmos section
+                desmosSection.style.display = 'block';
             } else {
-                document.getElementById('graphContainer').style.display = 'none';
+                desmosSection.style.display = 'none';
             }
         }
         
@@ -439,11 +467,11 @@
             
             if (classType === "AP") {
                 finalField.style.display = "none";
-                // Hide graph for AP classes
-                document.getElementById('graphContainer').style.display = 'none';
+                // Hide Desmos section for AP classes
+                document.getElementById('desmosSection').style.display = 'none';
             } else {
                 finalField.style.display = "block";
-                // Check if we need to show the graph
+                // Check if we need to show the Desmos section
                 const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
                 if (desiredGrade && !isNaN(desiredGrade)) {
                     calculateFinalGrade();
@@ -587,14 +615,14 @@
         window.onload = function() {
             toggleFinalField();
             
-            // Add event listeners to update graph when inputs change
+            // Add event listeners to update when inputs change
             document.getElementById("desiredGrade").addEventListener("input", function() {
                 const desiredGrade = parseFloat(this.value);
                 if (desiredGrade && !isNaN(desiredGrade)) {
                     calculateFinalGrade();
                 } else {
-                    // Hide graph if no desired grade
-                    document.getElementById('graphContainer').style.display = 'none';
+                    // Hide Desmos section if no desired grade
+                    document.getElementById('desmosSection').style.display = 'none';
                 }
             });
             
@@ -613,7 +641,17 @@
                 if (desiredGrade && !isNaN(desiredGrade)) calculateFinalGrade();
             });
             
+            document.getElementById("q4").addEventListener("input", function() {
+                const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+                if (desiredGrade && !isNaN(desiredGrade)) calculateFinalGrade();
+            });
+            
             document.getElementById("midterm").addEventListener("input", function() {
+                const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+                if (desiredGrade && !isNaN(desiredGrade)) calculateFinalGrade();
+            });
+            
+            document.getElementById("final").addEventListener("input", function() {
                 const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
                 if (desiredGrade && !isNaN(desiredGrade)) calculateFinalGrade();
             });
@@ -632,8 +670,8 @@
             document.getElementById("result").innerText = "";
             document.getElementById("neededGrade").innerText = "";
             
-            // Hide the graph
-            document.getElementById('graphContainer').style.display = 'none';
+            // Hide the Desmos section
+            document.getElementById('desmosSection').style.display = 'none';
         }
     </script>
 </head>
@@ -720,12 +758,16 @@
                 <h3 id="neededGrade"></h3>
             </div>
             
-            <!-- Interactive Graph Section -->
-            <div id="graphContainer" class="graph-container">
-                <h3 class="graph-title">Q4 vs. Final Exam Grade Relationship</h3>
-                <button class="graph-reset" onclick="resetZoom()">Reset Zoom</button>
-                <canvas id="gradeChart"></canvas>
-                <p class="graph-instructions">Use mouse wheel to zoom, click and drag to pan</p>
+            <!-- Desmos Link Section -->
+            <div id="desmosSection" class="desmos-section">
+                <h3>Explore Q4 and Final Exam Grade Combinations</h3>
+                <p>The equation below shows all possible combinations of Quarter 4 grades (x) and Final Exam grades (y) that will achieve your desired final grade of <span id="desiredGradeValue"></span>%.</p>
+                <p>Your current weighted sum is <span id="weightedSum"></span> (from Q1, Q2, Q3, and Midterm).</p>
+                <div class="equation" id="equation">y = 0.5 - 2x</div>
+                <p>Click the button below to visualize this equation in Desmos. In the graph, the x-axis represents your Quarter 4 grade, and the y-axis represents the Final Exam grade you would need.</p>
+                <a id="desmosLink" href="https://www.desmos.com/calculator/" target="_blank" class="desmos-link">
+                    <i class="fas fa-chart-line"></i> Open in Desmos Graphing Calculator
+                </a>
             </div>
         </div>
     </div>
