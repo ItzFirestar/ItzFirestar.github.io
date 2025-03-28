@@ -563,7 +563,7 @@
             document.getElementById('strategy1Desc').innerText = 'This strategy minimizes your Quarter 4 grade while maximizing your Final Exam performance.';
             document.getElementById('strategy2Desc').innerText = 'This strategy maximizes your Quarter 4 grade while minimizing your Final Exam performance.';
             
-            // Update labels for CP/Honors
+            // Update labels for CP/Honors - Ensure Q4 comes before Final Exam in display
             document.getElementById('minQ4Label').innerText = 'Quarter 4 (Minimum)';
             document.getElementById('maxFinalLabel').innerText = 'Final Exam (Maximum)';
             document.getElementById('maxQ4Label').innerText = 'Quarter 4 (Maximum)';
@@ -622,11 +622,11 @@
             document.getElementById('strategy1Desc').innerText = 'This strategy maximizes your Quarter 3 grade while minimizing your Quarter 4 performance.';
             document.getElementById('strategy2Desc').innerText = 'This strategy maximizes your Quarter 4 grade while minimizing your Quarter 3 performance.';
             
-            // Update labels for AP
-            document.getElementById('minQ4Label').innerText = 'Quarter 4 (Minimum)';
+            // Update labels for AP - Ensure Q3 comes before Q4 in display
             document.getElementById('maxFinalLabel').innerText = 'Quarter 3 (Maximum)';
-            document.getElementById('maxQ4Label').innerText = 'Quarter 4 (Maximum)';
+            document.getElementById('minQ4Label').innerText = 'Quarter 4 (Minimum)';
             document.getElementById('minFinalLabel').innerText = 'Quarter 3 (Minimum)';
+            document.getElementById('maxQ4Label').innerText = 'Quarter 4 (Maximum)';
         }
 
         function calculateAPMidtermQ3Q4Strategies(currentWeightedSum, desiredGrade) {
@@ -651,8 +651,8 @@
             // Update the display for Strategy 1
             if (strategy1Valid) {
                 const roundedQuarter = Math.max(0, Math.ceil(minQuarterNeeded * 100) / 100);
-                document.getElementById('minQ4').innerText = roundedQuarter.toFixed(2) + '%';
                 document.getElementById('maxFinal').innerText = midtermMax + '%';
+                document.getElementById('minQ4').innerText = roundedQuarter.toFixed(2) + '%';
                 document.getElementById('strategy1').style.display = 'block';
             } else {
                 document.getElementById('strategy1').style.display = 'none';
@@ -661,8 +661,8 @@
             // Update the display for Strategy 2
             if (strategy2Valid) {
                 const roundedMidterm = Math.max(0, Math.ceil(minMidtermNeeded * 100) / 100);
-                document.getElementById('maxQ4').innerText = quarterMax + '%';
                 document.getElementById('minFinal').innerText = roundedMidterm.toFixed(2) + '%';
+                document.getElementById('maxQ4').innerText = quarterMax + '%';
                 document.getElementById('strategy2').style.display = 'block';
             } else {
                 document.getElementById('strategy2').style.display = 'none';
@@ -682,11 +682,11 @@
             document.getElementById('strategy1Desc').innerText = 'This strategy maximizes your Midterm grade while minimizing your Quarter 3 and 4 performance (both quarters will have the same grade).';
             document.getElementById('strategy2Desc').innerText = 'This strategy maximizes your Quarter 3 and 4 grades while minimizing your Midterm performance (both quarters will have the same grade).';
             
-            // Update labels for AP
-            document.getElementById('minQ4Label').innerText = 'Q3 & Q4 (Minimum)';
+            // Update labels for AP - Ensure Midterm comes before Q3/Q4 in display
             document.getElementById('maxFinalLabel').innerText = 'Midterm (Maximum)';
-            document.getElementById('maxQ4Label').innerText = 'Q3 & Q4 (Maximum)';
+            document.getElementById('minQ4Label').innerText = 'Q3 & Q4 (Minimum)';
             document.getElementById('minFinalLabel').innerText = 'Midterm (Minimum)';
+            document.getElementById('maxQ4Label').innerText = 'Q3 & Q4 (Maximum)';
         }
 
         function toggleFinalField() {
@@ -809,12 +809,12 @@
                         <h4 id="strategy1Title">Strategy 1: Focus on Final Exam</h4>
                         <div class="optimal-grades">
                             <div class="optimal-grade-item">
-                                <div class="optimal-grade-value" id="minQ4">0%</div>
-                                <div class="optimal-grade-label" id="minQ4Label">Quarter 4 (Minimum)</div>
-                            </div>
-                            <div class="optimal-grade-item">
                                 <div class="optimal-grade-value" id="maxFinal">100%</div>
                                 <div class="optimal-grade-label" id="maxFinalLabel">Final Exam (Maximum)</div>
+                            </div>
+                            <div class="optimal-grade-item">
+                                <div class="optimal-grade-value" id="minQ4">0%</div>
+                                <div class="optimal-grade-label" id="minQ4Label">Quarter 4 (Minimum)</div>
                             </div>
                         </div>
                         <div class="strategy-description" id="strategy1Desc">
