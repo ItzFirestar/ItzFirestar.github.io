@@ -8,9 +8,9 @@
     <!-- Favicon with F1 in green -->
     <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA7ElEQVR42mNkGGDAOOqAUQeMOmDUAaMOGHXAqANGHUCWA1hIUcTBwcHAzs7OwMTExPD//38GXV1dBpAYsWDEOoCfn5/h9+/fDH/+/GFgZWVl+PXrF4OAgABWNSA5rA5gY2NjYGZmZvj//z/YAiYmJrADQOIgOVzqsBZDf//+ZQA5AuQAEAYBkCNADgLJYVOH1QEgRSBLQRYzMjIygBwBchBIDpc6rA4AKQRpBgUByAEgR4DkcKnD6gCQQlAQgBwAcgQoOEByuNRhdQBIISgIQA4AOQIkh0sdVgeAFIKCAOQAkCNAcrjUjVYHjDpg1AEAvUVz5VnF9AAAAAAASUVORK5CYII=">
     <!-- Chart.js for interactive graph -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
     <style>
         :root {
             --primary-bg: #1a1a1a;
@@ -373,9 +373,27 @@
             
             calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights);
             
-            // Update the graph if we have a desired grade and we're in a scenario where Q4 and Final Exam are relevant
-            if (desiredGrade && numQuarters === 3 && classType !== "AP") {
-                updateGraph(weightedSum, desiredGrade);
+            // Check if we should show the graph
+            if (desiredGrade && !isNaN(desiredGrade) && classType !== "AP") {
+                // Calculate the weighted sum for the graph
+                let graphWeightedSum = 0;
+                let q1Grade = parseFloat(document.getElementById("q1").value) || 0;
+                let q2Grade = parseFloat(document.getElementById("q2").value) || 0;
+                let q3Grade = parseFloat(document.getElementById("q3").value) || 0;
+                let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
+                
+                graphWeightedSum = (q1Grade * 20) + (q2Grade * 20) + (q3Grade * 20) + (midtermGrade * 10);
+                
+                // Only show graph if we have at least Q1, Q2, Q3 grades
+                if (document.getElementById("q1").value && 
+                    document.getElementById("q2").value && 
+                    document.getElementById("q3").value) {
+                    updateGraph(graphWeightedSum, desiredGrade);
+                } else {
+                    document.getElementById('graphContainer').style.display = 'none';
+                }
+            } else {
+                document.getElementById('graphContainer').style.display = 'none';
             }
         }
         
@@ -421,20 +439,20 @@
             
             if (classType === "AP") {
                 finalField.style.display = "none";
+                // Hide graph for AP classes
+                document.getElementById('graphContainer').style.display = 'none';
             } else {
                 finalField.style.display = "block";
-            }
-            
-            // Check if we need to update the graph when class type changes
-            const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
-            if (desiredGrade) {
-                calculateFinalGrade();
+                // Check if we need to show the graph
+                const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+                if (desiredGrade && !isNaN(desiredGrade)) {
+                    calculateFinalGrade();
+                }
             }
         }
 
         function updateGraph(weightedSum, desiredGrade) {
             const graphContainer = document.getElementById('graphContainer');
-            graphContainer.style.display = 'block';
             
             // Calculate the function y = (10/(100*D-W)) - 2*x
             // where W is the weighted sum, D is desired grade, x is Q4 grade, y is Final Exam grade
@@ -444,6 +462,12 @@
             
             // Generate data points for Q4 grades from 0 to 100
             for (let x = 0; x <= 100; x += 1) {
+                // Check if denominator would be zero or negative
+                if (100 * desiredGrade - weightedSum <= 0) {
+                    graphContainer.style.display = 'none';
+                    return;
+                }
+                
                 const y = (10 / (100 * desiredGrade - weightedSum)) - 2 * x;
                 
                 // Only include valid final exam grades (0-100)
@@ -461,6 +485,9 @@
                 graphContainer.style.display = 'none';
                 return;
             }
+            
+            // Show the graph container
+            graphContainer.style.display = 'block';
             
             // Destroy previous chart if it exists
             if (gradeChart) {
@@ -563,7 +590,7 @@
             // Add event listeners to update graph when inputs change
             document.getElementById("desiredGrade").addEventListener("input", function() {
                 const desiredGrade = parseFloat(this.value);
-                if (desiredGrade) {
+                if (desiredGrade && !isNaN(desiredGrade)) {
                     calculateFinalGrade();
                 } else {
                     // Hide graph if no desired grade
@@ -573,22 +600,27 @@
             
             document.getElementById("q1").addEventListener("input", function() {
                 const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
-                if (desiredGrade) calculateFinalGrade();
+                if (desiredGrade && !isNaN(desiredGrade)) calculateFinalGrade();
             });
             
             document.getElementById("q2").addEventListener("input", function() {
                 const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
-                if (desiredGrade) calculateFinalGrade();
+                if (desiredGrade && !isNaN(desiredGrade)) calculateFinalGrade();
             });
             
             document.getElementById("q3").addEventListener("input", function() {
                 const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
-                if (desiredGrade) calculateFinalGrade();
+                if (desiredGrade && !isNaN(desiredGrade)) calculateFinalGrade();
             });
             
             document.getElementById("midterm").addEventListener("input", function() {
                 const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
-                if (desiredGrade) calculateFinalGrade();
+                if (desiredGrade && !isNaN(desiredGrade)) calculateFinalGrade();
+            });
+            
+            document.getElementById("classType").addEventListener("change", function() {
+                const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+                if (desiredGrade && !isNaN(desiredGrade)) calculateFinalGrade();
             });
         };
 
