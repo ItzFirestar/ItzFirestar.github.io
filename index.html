@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grade Calculator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Favicon with F1 in green -->
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA7ElEQVR42mNkGGDAOOqAUQeMOmDUAaMOGHXAqANGHUCWA1hIUcTBwcHAzs7OwMTExPD//38GXV1dBpAYsWDEOoCfn5/h9+/fDH/+/GFgZWVl+PXrF4OAgABWNSA5rA5gY2NjYGZmZvj//z/YAiYmJrADQOIgOVzqsBZDf//+ZQA5AuQAEAYBkCNADgLJYVOH1QEgRSBLQRYzMjIygBwBchBIDpc6rA4AKQRpBgUByAEgR4DkcKnD6gCQQlAQgBwAcgQoOEByuNRhdQBIISgIQA4AOQIkh0sdVgeAFIKCAOQAkCNAcrjUjVYHjDpg1AEAvUVz5VnF9AAAAAAASUVORK5CYII=">
-    <!-- Chart.js for interactive graph -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
     <style>
         :root {
             --primary-bg: #1a1a1a;
@@ -240,7 +234,7 @@
             text-decoration: underline;
         }
 
-        /* Graph container styles */
+        /* Desmos link section styles */
         .desmos-section {
             display: none;
             background-color: var(--secondary-bg);
@@ -258,15 +252,42 @@
             margin-bottom: 1rem;
         }
 
+        .equation-container {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
         .equation {
             background-color: var(--input-bg);
             padding: 1rem;
             border-radius: 5px;
             font-family: 'Courier New', monospace;
-            margin: 1rem 0;
             text-align: center;
             font-size: 1.2rem;
             overflow-x: auto;
+            flex-grow: 1;
+            margin-right: 0.5rem;
+        }
+
+        .copy-btn {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            min-width: auto;
+            flex: 0 0 auto;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--border-color);
+        }
+
+        .copy-btn i {
+            margin: 0;
         }
 
         .desmos-link {
@@ -339,8 +360,6 @@
         }
     </style>
     <script>
-        let gradeChart = null;
-
         function toggleMenu() {
             const navLinks = document.querySelector('.nav-links');
             navLinks.classList.toggle('active');
@@ -415,7 +434,6 @@
                 // Update the equation and link
                 document.getElementById('equation').innerText = equation;
                 document.getElementById('desmosLink').href = desmosUrl;
-                document.getElementById('weightedSum').innerText = W;
                 document.getElementById('desiredGradeValue').innerText = D;
                 
                 // Show the Desmos section
@@ -479,137 +497,19 @@
             }
         }
 
-        function updateGraph(weightedSum, desiredGrade) {
-            const graphContainer = document.getElementById('graphContainer');
-            
-            // Calculate the function y = (10/(100*D-W)) - 2*x
-            // where W is the weighted sum, D is desired grade, x is Q4 grade, y is Final Exam grade
-            
-            const data = [];
-            const labels = [];
-            
-            // Generate data points for Q4 grades from 0 to 100
-            for (let x = 0; x <= 100; x += 1) {
-                // Check if denominator would be zero or negative
-                if (100 * desiredGrade - weightedSum <= 0) {
-                    graphContainer.style.display = 'none';
-                    return;
-                }
-                
-                const y = (10 / (100 * desiredGrade - weightedSum)) - 2 * x;
-                
-                // Only include valid final exam grades (0-100)
-                if (y >= 0 && y <= 100) {
-                    data.push({
-                        x: x,
-                        y: y
-                    });
-                    labels.push(x);
-                }
-            }
-            
-            // If we have no valid data points, hide the graph
-            if (data.length === 0) {
-                graphContainer.style.display = 'none';
-                return;
-            }
-            
-            // Show the graph container
-            graphContainer.style.display = 'block';
-            
-            // Destroy previous chart if it exists
-            if (gradeChart) {
-                gradeChart.destroy();
-            }
-            
-            // Create the chart
-            const ctx = document.getElementById('gradeChart').getContext('2d');
-            gradeChart = new Chart(ctx, {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'Required Final Exam Grade',
-                        data: data,
-                        backgroundColor: '#4CAF50',
-                        borderColor: '#4CAF50',
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        showLine: true,
-                        tension: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Quarter 4 Grade (%)',
-                                color: '#F1F1F1'
-                            },
-                            min: 0,
-                            max: 100,
-                            grid: {
-                                color: '#555'
-                            },
-                            ticks: {
-                                color: '#D1D1D1'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Required Final Exam Grade (%)',
-                                color: '#F1F1F1'
-                            },
-                            min: 0,
-                            max: 100,
-                            grid: {
-                                color: '#555'
-                            },
-                            ticks: {
-                                color: '#D1D1D1'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#F1F1F1'
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Q4: ${context.parsed.x.toFixed(1)}%, Final: ${context.parsed.y.toFixed(1)}%`;
-                                }
-                            }
-                        },
-                        zoom: {
-                            pan: {
-                                enabled: true,
-                                mode: 'xy'
-                            },
-                            zoom: {
-                                wheel: {
-                                    enabled: true,
-                                },
-                                pinch: {
-                                    enabled: true
-                                },
-                                mode: 'xy',
-                            }
-                        }
-                    }
-                }
+        function copyEquation() {
+            const equation = document.getElementById('equation').innerText;
+            navigator.clipboard.writeText(equation).then(() => {
+                const copyBtn = document.getElementById('copyBtn');
+                const originalIcon = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalIcon;
+                }, 2000);
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy equation. Please try again or copy it manually.');
             });
-        }
-
-        function resetZoom() {
-            if (gradeChart) {
-                gradeChart.resetZoom();
-            }
         }
 
         window.onload = function() {
@@ -760,11 +660,18 @@
             
             <!-- Desmos Link Section -->
             <div id="desmosSection" class="desmos-section">
-                <h3>Explore Q4 and Final Exam Grade Combinations</h3>
-                <p>The equation below shows all possible combinations of Quarter 4 grades (x) and Final Exam grades (y) that will achieve your desired final grade of <span id="desiredGradeValue"></span>%.</p>
-                <p>Your current weighted sum is <span id="weightedSum"></span> (from Q1, Q2, Q3, and Midterm).</p>
-                <div class="equation" id="equation">y = 0.5 - 2x</div>
-                <p>Click the button below to visualize this equation in Desmos. In the graph, the x-axis represents your Quarter 4 grade, and the y-axis represents the Final Exam grade you would need.</p>
+                <h3>Q4 and Final Exam Grade Combinations</h3>
+                <p>This equation shows all possible combinations of Quarter 4 grades (x) and Final Exam grades (y) that will achieve your desired final grade of <span id="desiredGradeValue"></span>%.</p>
+                
+                <div class="equation-container">
+                    <div class="equation" id="equation">y = 0.5 - 2x</div>
+                    <button id="copyBtn" class="copy-btn" onclick="copyEquation()" title="Copy equation">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                
+                <p>Use this equation in Desmos to visualize all possible grade combinations. The x-axis represents your Quarter 4 grade, and the y-axis represents the Final Exam grade you would need.</p>
+                
                 <a id="desmosLink" href="https://www.desmos.com/calculator/" target="_blank" class="desmos-link">
                     <i class="fas fa-chart-line"></i> Open in Desmos Graphing Calculator
                 </a>
