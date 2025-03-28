@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Favicon with F1 in green -->
     <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA7ElEQVR42mNkGGDAOOqAUQeMOmDUAaMOGHXAqANGHUCWA1hIUcTBwcHAzs7OwMTExPD//38GXV1dBpAYsWDEOoCfn5/h9+/fDH/+/GFgZWVl+PXrF4OAgABWNSA5rA5gY2NjYGZmZvj//z/YAiYmJrADQOIgOVzqsBZDf//+ZQA5AuQAEAYBkCNADgLJYVOH1QEgRSBLQRYzMjIygBwBchBIDpc6rA4AKQRpBgUByAEgR4DkcKnD6gCQQlAQgBwAcgQoOEByuNRhdQBIISgIQA4AOQIkh0sdVgeAFIKCAOQAkCNAcrjUjVYHjDpg1AEAvUVz5VnF9AAAAAAASUVORK5CYII=">
+    <!-- Chart.js for interactive graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
     <style>
         :root {
             --primary-bg: #1a1a1a;
@@ -236,6 +240,49 @@
             text-decoration: underline;
         }
 
+        /* Graph container styles */
+        .graph-container {
+            display: none;
+            background-color: var(--secondary-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            height: 400px;
+            position: relative;
+        }
+
+        .graph-title {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .graph-instructions {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .graph-reset {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .graph-reset:hover {
+            background-color: var(--border-color);
+        }
+
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
@@ -269,6 +316,10 @@
             .input-group {
                 min-width: 100%;
             }
+
+            .graph-container {
+                height: 300px;
+            }
         }
 
         .footer {
@@ -280,6 +331,8 @@
         }
     </style>
     <script>
+        let gradeChart = null;
+
         function toggleMenu() {
             const navLinks = document.querySelector('.nav-links');
             navLinks.classList.toggle('active');
@@ -319,6 +372,11 @@
             document.getElementById("result").innerText = finalGrade.toFixed(2) + "%";
             
             calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights);
+            
+            // Update the graph if we have a desired grade and we're in a scenario where Q4 and Final Exam are relevant
+            if (desiredGrade && numQuarters === 3 && classType !== "AP") {
+                updateGraph(weightedSum, desiredGrade);
+            }
         }
         
         function getNumQuarters() {
@@ -366,10 +424,172 @@
             } else {
                 finalField.style.display = "block";
             }
+            
+            // Check if we need to update the graph when class type changes
+            const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+            if (desiredGrade) {
+                calculateFinalGrade();
+            }
+        }
+
+        function updateGraph(weightedSum, desiredGrade) {
+            const graphContainer = document.getElementById('graphContainer');
+            graphContainer.style.display = 'block';
+            
+            // Calculate the function y = (10/(100*D-W)) - 2*x
+            // where W is the weighted sum, D is desired grade, x is Q4 grade, y is Final Exam grade
+            
+            const data = [];
+            const labels = [];
+            
+            // Generate data points for Q4 grades from 0 to 100
+            for (let x = 0; x <= 100; x += 1) {
+                const y = (10 / (100 * desiredGrade - weightedSum)) - 2 * x;
+                
+                // Only include valid final exam grades (0-100)
+                if (y >= 0 && y <= 100) {
+                    data.push({
+                        x: x,
+                        y: y
+                    });
+                    labels.push(x);
+                }
+            }
+            
+            // If we have no valid data points, hide the graph
+            if (data.length === 0) {
+                graphContainer.style.display = 'none';
+                return;
+            }
+            
+            // Destroy previous chart if it exists
+            if (gradeChart) {
+                gradeChart.destroy();
+            }
+            
+            // Create the chart
+            const ctx = document.getElementById('gradeChart').getContext('2d');
+            gradeChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Required Final Exam Grade',
+                        data: data,
+                        backgroundColor: '#4CAF50',
+                        borderColor: '#4CAF50',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        showLine: true,
+                        tension: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Quarter 4 Grade (%)',
+                                color: '#F1F1F1'
+                            },
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                color: '#555'
+                            },
+                            ticks: {
+                                color: '#D1D1D1'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Required Final Exam Grade (%)',
+                                color: '#F1F1F1'
+                            },
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                color: '#555'
+                            },
+                            ticks: {
+                                color: '#D1D1D1'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#F1F1F1'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Q4: ${context.parsed.x.toFixed(1)}%, Final: ${context.parsed.y.toFixed(1)}%`;
+                                }
+                            }
+                        },
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'xy'
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'xy',
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function resetZoom() {
+            if (gradeChart) {
+                gradeChart.resetZoom();
+            }
         }
 
         window.onload = function() {
             toggleFinalField();
+            
+            // Add event listeners to update graph when inputs change
+            document.getElementById("desiredGrade").addEventListener("input", function() {
+                const desiredGrade = parseFloat(this.value);
+                if (desiredGrade) {
+                    calculateFinalGrade();
+                } else {
+                    // Hide graph if no desired grade
+                    document.getElementById('graphContainer').style.display = 'none';
+                }
+            });
+            
+            document.getElementById("q1").addEventListener("input", function() {
+                const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+                if (desiredGrade) calculateFinalGrade();
+            });
+            
+            document.getElementById("q2").addEventListener("input", function() {
+                const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+                if (desiredGrade) calculateFinalGrade();
+            });
+            
+            document.getElementById("q3").addEventListener("input", function() {
+                const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+                if (desiredGrade) calculateFinalGrade();
+            });
+            
+            document.getElementById("midterm").addEventListener("input", function() {
+                const desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+                if (desiredGrade) calculateFinalGrade();
+            });
         };
 
         function clearFields() {
@@ -379,6 +599,9 @@
             toggleFinalField();
             document.getElementById("result").innerText = "";
             document.getElementById("neededGrade").innerText = "";
+            
+            // Hide the graph
+            document.getElementById('graphContainer').style.display = 'none';
         }
     </script>
 </head>
@@ -463,6 +686,14 @@
             <div class="result-section">
                 <h3>Final Grade: <span id="result"></span></h3>
                 <h3 id="neededGrade"></h3>
+            </div>
+            
+            <!-- Interactive Graph Section -->
+            <div id="graphContainer" class="graph-container">
+                <h3 class="graph-title">Q4 vs. Final Exam Grade Relationship</h3>
+                <button class="graph-reset" onclick="resetZoom()">Reset Zoom</button>
+                <canvas id="gradeChart"></canvas>
+                <p class="graph-instructions">Use mouse wheel to zoom, click and drag to pan</p>
             </div>
         </div>
     </div>
