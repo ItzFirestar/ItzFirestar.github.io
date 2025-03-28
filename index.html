@@ -343,6 +343,27 @@
             font-size: 0.9rem;
             color: var(--text-secondary);
         }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+
+        .checkbox-container label {
+            display: inline;
+            margin-bottom: 0;
+        }
+
+        .ap-final-option {
+            display: none;
+            margin-top: 0.5rem;
+        }
     </style>
     <script>
         function toggleMenu() {
@@ -354,10 +375,29 @@
             let numQuarters = getNumQuarters();
             let classType = document.getElementById("classType").value;
             let desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+            let apHasFinal = document.getElementById("apHasFinal").checked;
             
-            let quarterWeights = (classType === "AP") ? 22 : 20;
-            let midtermWeight = (classType === "AP") ? 12 : 10;
-            let finalExamWeight = (classType === "AP") ? 0 : 10;
+            // Determine weights based on class type and if AP has final
+            let quarterWeights, midtermWeight, finalExamWeight;
+            
+            if (classType === "AP") {
+                if (apHasFinal) {
+                    // AP with final exam
+                    quarterWeights = 20;
+                    midtermWeight = 10;
+                    finalExamWeight = 10;
+                } else {
+                    // Standard AP
+                    quarterWeights = 22;
+                    midtermWeight = 12;
+                    finalExamWeight = 0;
+                }
+            } else {
+                // CP/Honors
+                quarterWeights = 20;
+                midtermWeight = 10;
+                finalExamWeight = 10;
+            }
             
             let totalWeight = 0, weightedSum = 0;
             
@@ -375,7 +415,7 @@
                 totalWeight += midtermWeight;
             }
             
-            if (numQuarters == 4 && classType !== "AP" && document.getElementById("final").value) {
+            if (numQuarters == 4 && (classType !== "AP" || apHasFinal) && document.getElementById("final").value) {
                 weightedSum += finalExamGrade * finalExamWeight;
                 totalWeight += finalExamWeight;
             }
@@ -383,7 +423,7 @@
             let finalGrade = (totalWeight > 0) ? (weightedSum / totalWeight) : 0;
             document.getElementById("result").innerText = finalGrade.toFixed(2) + "%";
             
-            calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights);
+            calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights, apHasFinal);
             
             // Check if we should show the grade pairs section
             const gradePairsSection = document.getElementById('gradePairsSection');
@@ -434,14 +474,15 @@
                 let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
                 let hasMidterm = document.getElementById("midterm").value !== "";
 
-                let currentWeightedSum = (q1Grade * 22) + (q2Grade * 22);
+                // Use the appropriate weights based on whether AP has final
+                let currentWeightedSum = (q1Grade * quarterWeights) + (q2Grade * quarterWeights);
                 if (hasMidterm) {
-                    currentWeightedSum += (midtermGrade * 12);
+                    currentWeightedSum += (midtermGrade * midtermWeight);
                 }
 
-                let remainingWeight = 22 + 22; // Q3 (22%) + Q4 (22%)
+                let remainingWeight = quarterWeights + quarterWeights; // Q3 + Q4
                 if (!hasMidterm) {
-                    remainingWeight += 12; // Add midterm weight (12%) if not entered
+                    remainingWeight += midtermWeight; // Add midterm weight if not entered
                 }
                 
                 // Calculate the minimum average needed for the remaining components
@@ -460,11 +501,45 @@
                 // Calculate optimal combinations for AP with both Q3 and Q4 blank
                 if (hasMidterm) {
                     // If midterm is provided, calculate Q3/Q4 strategies
-                    calculateAPQ3Q4Strategies(currentWeightedSum, desiredGrade);
+                    calculateAPQ3Q4Strategies(currentWeightedSum, desiredGrade, quarterWeights);
                 } else {
                     // If midterm is not provided, calculate Midterm/Q3/Q4 strategies
-                    calculateAPMidtermQ3Q4Strategies(currentWeightedSum, desiredGrade);
+                    calculateAPMidtermQ3Q4Strategies(currentWeightedSum, desiredGrade, quarterWeights, midtermWeight);
                 }
+                
+                // Show the grade pairs section
+                gradePairsSection.style.display = 'block';
+            }
+            // For AP classes with final when desired grade is entered and Q4 and Final are blank
+            else if (desiredGrade && !isNaN(desiredGrade) && 
+                     classType === "AP" && apHasFinal &&
+                     document.getElementById("q4").value === "" && 
+                     document.getElementById("final").value === "") {
+        
+                // Calculate the weighted sum for the equation
+                let q1Grade = parseFloat(document.getElementById("q1").value) || 0;
+                let q2Grade = parseFloat(document.getElementById("q2").value) || 0;
+                let q3Grade = parseFloat(document.getElementById("q3").value) || 0;
+                let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
+                
+                let currentWeightedSum = (q1Grade * 20) + (q2Grade * 20) + (q3Grade * 20) + (midtermGrade * 10);
+                let remainingWeight = 20 + 10; // Q4 (20%) + Final Exam (10%)
+                
+                // Calculate the minimum average needed for the remaining components
+                let minAvgNeeded = (desiredGrade * 100 - currentWeightedSum) / remainingWeight;
+                
+                // Check if it's possible to achieve the desired grade
+                if (minAvgNeeded > 100) {
+                    gradePairsSection.style.display = 'none';
+                    return;
+                } else if (minAvgNeeded < 0) {
+                    // Already achieved desired grade
+                    gradePairsSection.style.display = 'none';
+                    return;
+                }
+                
+                // Calculate optimal combinations for AP with final (same as CP/Honors)
+                calculateOptimalCombinations(currentWeightedSum, desiredGrade, true);
                 
                 // Show the grade pairs section
                 gradePairsSection.style.display = 'block';
@@ -485,23 +560,27 @@
             return numQuarters;
         }
         
-        function calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights) {
+        function calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights, apHasFinal) {
             let remainingWeight = 0, requiredGrade = 0;
             let resultText = "";
             
             if (numQuarters == 3) {
-                remainingWeight = quarterWeights + ((classType !== "AP") ? finalExamWeight : 0);
+                remainingWeight = quarterWeights + ((classType !== "AP" || apHasFinal) ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
-                resultText = "You need a " + requiredGrade.toFixed(2) + "% in Quarter 4" + ((classType !== "AP") ? " and " + requiredGrade.toFixed(2) + "% on the final exam" : "") + " to achieve your desired grade.";
+                resultText = "You need a " + requiredGrade.toFixed(2) + "% in Quarter 4" + 
+                             ((classType !== "AP" || apHasFinal) ? " and " + requiredGrade.toFixed(2) + "% on the final exam" : "") + 
+                             " to achieve your desired grade.";
             } else if (numQuarters == 2 && !document.getElementById("midterm").value) {
-                remainingWeight = midtermWeight + (2 * quarterWeights) + ((classType !== "AP") ? finalExamWeight : 0);
+                remainingWeight = midtermWeight + (2 * quarterWeights) + ((classType !== "AP" || apHasFinal) ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
-                resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% on the midterm, next two quarters" + ((classType !== "AP") ? " and the final exam." : ".");
+                resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% on the midterm, next two quarters" + 
+                             ((classType !== "AP" || apHasFinal) ? " and the final exam." : ".");
             } else if (numQuarters == 2 && document.getElementById("midterm").value) {
-                remainingWeight = (2 * quarterWeights) + ((classType !== "AP") ? finalExamWeight : 0);
+                remainingWeight = (2 * quarterWeights) + ((classType !== "AP" || apHasFinal) ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
-                resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% in the next two quarters" + ((classType !== "AP") ? " and the final exam." : ".");
-            } else if (numQuarters == 4 && classType !== "AP" && !document.getElementById("final").value) {
+                resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% in the next two quarters" + 
+                             ((classType !== "AP" || apHasFinal) ? " and the final exam." : ".");
+            } else if (numQuarters == 4 && (classType !== "AP" || apHasFinal) && !document.getElementById("final").value) {
                 remainingWeight = finalExamWeight;
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
                 resultText = "You need a " + requiredGrade.toFixed(2) + "% on the final exam to achieve your desired grade.";
@@ -510,11 +589,11 @@
             document.getElementById("neededGrade").innerText = resultText;
         }
 
-        function calculateOptimalCombinations(currentWeightedSum, desiredGrade, isAP = false) {
+        function calculateOptimalCombinations(currentWeightedSum, desiredGrade, isAPWithFinal = false) {
             // Calculate the target sum needed
             const targetSum = (desiredGrade * 100) - currentWeightedSum;
             
-            // For CP/Honors classes (Q4 and Final Exam)
+            // For CP/Honors classes or AP with final (Q4 and Final Exam)
             // Strategy 1: Lowest Q4, Highest Final
             const finalExamMax = 100;
             const finalExamMaxContribution = finalExamMax * 10;
@@ -552,37 +631,37 @@
             // Show/hide the optimal combinations section
             document.getElementById('optimalCombos').style.display = (strategy1Valid || strategy2Valid) ? 'flex' : 'none';
             
-            // Update section title for CP/Honors
-            document.getElementById('gradePairsTitle').innerText = 'Optimal Grade Strategies';
+            // Update section title
+            document.getElementById('gradePairsTitle').innerText = isAPWithFinal ? 'Optimal AP Grade Strategies' : 'Optimal Grade Strategies';
             
-            // Update strategy titles for CP/Honors
+            // Update strategy titles
             document.getElementById('strategy1Title').innerText = 'Strategy 1: Focus on Final Exam';
             document.getElementById('strategy2Title').innerText = 'Strategy 2: Focus on Quarter 4';
             
-            // Update strategy descriptions for CP/Honors
+            // Update strategy descriptions
             document.getElementById('strategy1Desc').innerText = 'This strategy minimizes your Quarter 4 grade while maximizing your Final Exam performance.';
             document.getElementById('strategy2Desc').innerText = 'This strategy maximizes your Quarter 4 grade while minimizing your Final Exam performance.';
             
-            // Update labels for CP/Honors - Ensure Q4 comes before Final Exam in display
+            // Update labels - Ensure Q4 comes before Final Exam in display
             document.getElementById('minQ4Label').innerText = 'Quarter 4 (Minimum)';
             document.getElementById('maxFinalLabel').innerText = 'Final Exam (Maximum)';
             document.getElementById('maxQ4Label').innerText = 'Quarter 4 (Maximum)';
             document.getElementById('minFinalLabel').innerText = 'Final Exam (Minimum)';
         }
 
-        function calculateAPQ3Q4Strategies(currentWeightedSum, desiredGrade) {
+        function calculateAPQ3Q4Strategies(currentWeightedSum, desiredGrade, quarterWeight) {
             // Calculate the target sum needed
             const targetSum = (desiredGrade * 100) - currentWeightedSum;
             
             // Strategy 1: Maximum Q3, Minimum Q4
             const q3Max = 100;
-            const q3MaxContribution = q3Max * 22;
-            const minQ4Needed = (targetSum - q3MaxContribution) / 22;
+            const q3MaxContribution = q3Max * quarterWeight;
+            const minQ4Needed = (targetSum - q3MaxContribution) / quarterWeight;
             
             // Strategy 2: Minimum Q3, Maximum Q4
             const q4Max = 100;
-            const q4MaxContribution = q4Max * 22;
-            const minQ3Needed = (targetSum - q4MaxContribution) / 22;
+            const q4MaxContribution = q4Max * quarterWeight;
+            const minQ3Needed = (targetSum - q4MaxContribution) / quarterWeight;
             
             // Check if these are valid combinations
             let strategy1Valid = minQ4Needed >= 0 && minQ4Needed <= 100;
@@ -629,20 +708,20 @@
             document.getElementById('maxQ4Label').innerText = 'Quarter 4 (Maximum)';
         }
 
-        function calculateAPMidtermQ3Q4Strategies(currentWeightedSum, desiredGrade) {
+        function calculateAPMidtermQ3Q4Strategies(currentWeightedSum, desiredGrade, quarterWeight, midtermWeight) {
             // Calculate the target sum needed
             const targetSum = (desiredGrade * 100) - currentWeightedSum;
             
             // Strategy 1: Maximum Midterm, Minimum Q3/Q4
             const midtermMax = 100;
-            const midtermMaxContribution = midtermMax * 12;
+            const midtermMaxContribution = midtermMax * midtermWeight;
             // Q3 and Q4 will have the same value
-            const minQuarterNeeded = (targetSum - midtermMaxContribution) / 44; // 22% + 22%
+            const minQuarterNeeded = (targetSum - midtermMaxContribution) / (quarterWeight * 2); // Q3 + Q4
             
             // Strategy 2: Minimum Midterm, Maximum Q3/Q4
             const quarterMax = 100;
-            const quarterMaxContribution = quarterMax * 44; // 22% + 22%
-            const minMidtermNeeded = (targetSum - quarterMaxContribution) / 12;
+            const quarterMaxContribution = quarterMax * (quarterWeight * 2); // Q3 + Q4
+            const minMidtermNeeded = (targetSum - quarterMaxContribution) / midtermWeight;
             
             // Check if these are valid combinations
             let strategy1Valid = minQuarterNeeded >= 0 && minQuarterNeeded <= 100;
@@ -692,11 +771,27 @@
         function toggleFinalField() {
             let classType = document.getElementById("classType").value;
             let finalField = document.getElementById("finalField");
+            let apFinalOption = document.getElementById("apFinalOption");
             
             if (classType === "AP") {
                 finalField.style.display = "none";
+                apFinalOption.style.display = "block";
+                updateAPFinalField();
             } else {
                 finalField.style.display = "block";
+                apFinalOption.style.display = "none";
+            }
+        }
+        
+        function updateAPFinalField() {
+            let apHasFinal = document.getElementById("apHasFinal").checked;
+            let finalField = document.getElementById("finalField");
+            
+            if (apHasFinal) {
+                finalField.style.display = "block";
+                document.querySelector('label[for="final"]').innerText = "Final Exam/Project";
+            } else {
+                finalField.style.display = "none";
             }
         }
 
@@ -708,6 +803,7 @@
             document.querySelectorAll("input[type='number']").forEach(input => input.value = "");
             document.getElementById("desiredGrade").value = "";
             document.getElementById("classType").value = "CP";
+            document.getElementById("apHasFinal").checked = false;
             toggleFinalField();
             document.getElementById("result").innerText = "";
             document.getElementById("neededGrade").innerText = "";
@@ -744,6 +840,22 @@
             
             <div class="input-row">
                 <div class="input-group">
+                    <label for="classType">Class Type</label>
+                    <select id="classType" onchange="toggleFinalField()">
+                        <option value="CP">CP/Honors</option>
+                        <option value="AP">AP</option>
+                    </select>
+                    <div id="apFinalOption" class="ap-final-option">
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="apHasFinal" onchange="updateAPFinalField()">
+                            <label for="apHasFinal">This AP class has a final exam/project</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-row">
+                <div class="input-group">
                     <label for="q1">Quarter 1</label>
                     <input type="number" id="q1" min="0" max="100" placeholder="Enter grade">
                 </div>
@@ -775,13 +887,6 @@
                 <div class="input-group" id="finalField">
                     <label for="final">Final Exam (CP/Honors only)</label>
                     <input type="number" id="final" min="0" max="100" placeholder="Enter grade">
-                </div>
-                <div class="input-group">
-                    <label for="classType">Class Type</label>
-                    <select id="classType" onchange="toggleFinalField()">
-                        <option value="CP">CP/Honors</option>
-                        <option value="AP">AP</option>
-                    </select>
                 </div>
             </div>
             
