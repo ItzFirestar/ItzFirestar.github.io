@@ -276,6 +276,43 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
         }
+
+        .grade-pairs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background-color: var(--input-bg);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .grade-pairs-table th, .grade-pairs-table td {
+            padding: 0.75rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .grade-pairs-table th {
+            background-color: var(--secondary-bg);
+            font-weight: 600;
+        }
+
+        .grade-pairs-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .grade-pairs-section {
+            display: none;
+            background-color: var(--secondary-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .grade-pairs-section h3 {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
     </style>
     <script>
         function toggleMenu() {
@@ -317,6 +354,46 @@
             document.getElementById("result").innerText = finalGrade.toFixed(2) + "%";
             
             calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights);
+            
+            // Check if we should show the grade pairs section
+            const gradePairsSection = document.getElementById('gradePairsSection');
+            
+            // Only show for CP/Honors classes when desired grade is entered and Q4 and Final are blank
+            if (desiredGrade && !isNaN(desiredGrade) && 
+                classType !== "AP" && 
+                document.getElementById("q4").value === "" && 
+                document.getElementById("final").value === "") {
+                
+                // Calculate the weighted sum for the equation
+                let q1Grade = parseFloat(document.getElementById("q1").value) || 0;
+                let q2Grade = parseFloat(document.getElementById("q2").value) || 0;
+                let q3Grade = parseFloat(document.getElementById("q3").value) || 0;
+                let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
+                
+                let currentWeightedSum = (q1Grade * 20) + (q2Grade * 20) + (q3Grade * 20) + (midtermGrade * 10);
+                let remainingWeight = 20 + 10; // Q4 (20%) + Final Exam (10%)
+                
+                // Calculate the minimum average needed for the remaining components
+                let minAvgNeeded = (desiredGrade * 100 - currentWeightedSum) / remainingWeight;
+                
+                // Check if it's possible to achieve the desired grade
+                if (minAvgNeeded > 100) {
+                    gradePairsSection.style.display = 'none';
+                    return;
+                } else if (minAvgNeeded < 0) {
+                    // Already achieved desired grade
+                    gradePairsSection.style.display = 'none';
+                    return;
+                }
+                
+                // Calculate grade pairs
+                calculateGradePairs(currentWeightedSum, desiredGrade);
+                
+                // Show the grade pairs section
+                gradePairsSection.style.display = 'block';
+            } else {
+                gradePairsSection.style.display = 'none';
+            }
         }
         
         function getNumQuarters() {
@@ -355,6 +432,52 @@
             document.getElementById("neededGrade").innerText = resultText;
         }
 
+        function calculateGradePairs(currentWeightedSum, desiredGrade) {
+            // Clear previous results
+            const tableBody = document.getElementById('gradePairsTableBody');
+            tableBody.innerHTML = '';
+            
+            // Calculate the target sum needed from Q4 and Final Exam
+            const targetSum = (desiredGrade * 100) - currentWeightedSum;
+            
+            // Generate grade pairs
+            const pairs = [];
+            
+            // Q4 has 20% weight, Final has 10% weight
+            // For each possible Q4 grade (in increments of 10), calculate required Final grade
+            for (let q4 = 100; q4 >= 0; q4 -= 10) {
+                const q4Contribution = q4 * 20;
+                const finalNeeded = (targetSum - q4Contribution) / 10;
+                
+                // Only include valid pairs (final between 0 and 100)
+                if (finalNeeded >= 0 && finalNeeded <= 100) {
+                    pairs.push({
+                        q4: q4,
+                        final: Math.round(finalNeeded)
+                    });
+                }
+            }
+            
+            // Add rows to the table
+            pairs.forEach(pair => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pair.q4}%</td>
+                    <td>${pair.final}%</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // If no valid pairs were found
+            if (pairs.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="2">No valid grade combinations found</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
         function toggleFinalField() {
             let classType = document.getElementById("classType").value;
             let finalField = document.getElementById("finalField");
@@ -377,6 +500,8 @@
             toggleFinalField();
             document.getElementById("result").innerText = "";
             document.getElementById("neededGrade").innerText = "";
+            // Hide the grade pairs section
+            document.getElementById('gradePairsSection').style.display = 'none';
         }
     </script>
 </head>
@@ -461,6 +586,25 @@
             <div class="result-section">
                 <h3>Final Grade: <span id="result"></span></h3>
                 <h3 id="neededGrade"></h3>
+            </div>
+            <!-- Grade Pairs Section -->
+            <div id="gradePairsSection" class="grade-pairs-section">
+                <h3>Possible Grade Combinations</h3>
+                <p>These are possible combinations of Quarter 4 and Final Exam grades that will achieve your desired final grade:</p>
+                
+                <table class="grade-pairs-table">
+                    <thead>
+                        <tr>
+                            <th>Quarter 4</th>
+                            <th>Final Exam</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradePairsTableBody">
+                        <!-- Grade pairs will be inserted here -->
+                    </tbody>
+                </table>
+                
+                <p class="mt-4">Note: These are approximate values. Actual grades may vary slightly due to rounding.</p>
             </div>
         </div>
     </div>
