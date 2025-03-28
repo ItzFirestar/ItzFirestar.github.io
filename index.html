@@ -388,12 +388,12 @@
             // Check if we should show the grade pairs section
             const gradePairsSection = document.getElementById('gradePairsSection');
             
-            // Only show for CP/Honors classes when desired grade is entered and Q4 and Final are blank
+            // For CP/Honors classes when desired grade is entered and Q4 and Final are blank
             if (desiredGrade && !isNaN(desiredGrade) && 
                 classType !== "AP" && 
                 document.getElementById("q4").value === "" && 
                 document.getElementById("final").value === "") {
-                
+        
                 // Calculate the weighted sum for the equation
                 let q1Grade = parseFloat(document.getElementById("q1").value) || 0;
                 let q2Grade = parseFloat(document.getElementById("q2").value) || 0;
@@ -417,11 +417,50 @@
                 }
                 
                 // Calculate optimal combinations
-                calculateOptimalCombinations(currentWeightedSum, desiredGrade);
+                calculateOptimalCombinations(currentWeightedSum, desiredGrade, false);
                 
                 // Show the grade pairs section
                 gradePairsSection.style.display = 'block';
-            } else {
+            } 
+            // For AP classes when desired grade is entered and both Q3 and Q4 are blank
+            else if (desiredGrade && !isNaN(desiredGrade) && 
+                     classType === "AP" && 
+                     document.getElementById("q3").value === "" &&
+                     document.getElementById("q4").value === "") {
+                
+                // Calculate the weighted sum for the equation
+                let q1Grade = parseFloat(document.getElementById("q1").value) || 0;
+                let q2Grade = parseFloat(document.getElementById("q2").value) || 0;
+                let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
+                let hasMidterm = document.getElementById("midterm").value !== "";
+
+                let currentWeightedSum = (q1Grade * 22) + (q2Grade * 22);
+                if (hasMidterm) {
+                    currentWeightedSum += (midtermGrade * 12);
+                }
+
+                let remainingWeight = 22 + 22; // Q3 (22%) + Q4 (22%)
+                
+                // Calculate the minimum average needed for the remaining components
+                let minAvgNeeded = (desiredGrade * 100 - currentWeightedSum) / remainingWeight;
+                
+                // Check if it's possible to achieve the desired grade
+                if (minAvgNeeded > 100) {
+                    gradePairsSection.style.display = 'none';
+                    return;
+                } else if (minAvgNeeded < 0) {
+                    // Already achieved desired grade
+                    gradePairsSection.style.display = 'none';
+                    return;
+                }
+                
+                // Calculate optimal combinations for AP with both Q3 and Q4 blank
+                calculateAPQ3Q4Strategy(currentWeightedSum, desiredGrade);
+                
+                // Show the grade pairs section
+                gradePairsSection.style.display = 'block';
+            }
+            else {
                 gradePairsSection.style.display = 'none';
             }
         }
@@ -462,46 +501,259 @@
             document.getElementById("neededGrade").innerText = resultText;
         }
 
-        function calculateOptimalCombinations(currentWeightedSum, desiredGrade) {
-            // Calculate the target sum needed from Q4 and Final Exam
+        function calculateOptimalCombinations(currentWeightedSum, desiredGrade, isAP = false, hasMidterm = false) {
+            // Calculate the target sum needed
             const targetSum = (desiredGrade * 100) - currentWeightedSum;
             
-            // Strategy 1: Lowest Q4, Highest Final
-            const finalExamMax = 100;
-            const finalExamMaxContribution = finalExamMax * 10;
-            const minQ4Needed = (targetSum - finalExamMaxContribution) / 20;
+            if (!isAP) {
+                // For CP/Honors classes (Q4 and Final Exam)
+                // Strategy 1: Lowest Q4, Highest Final
+                const finalExamMax = 100;
+                const finalExamMaxContribution = finalExamMax * 10;
+                const minQ4Needed = (targetSum - finalExamMaxContribution) / 20;
+                
+                // Strategy 2: Highest Q4, Lowest Final
+                const q4Max = 100;
+                const q4MaxContribution = q4Max * 20;
+                const minFinalNeeded = (targetSum - q4MaxContribution) / 10;
+                
+                // Check if these are valid combinations
+                let strategy1Valid = minQ4Needed >= 0 && minQ4Needed <= 100;
+                let strategy2Valid = minFinalNeeded >= 0 && minFinalNeeded <= 100;
+                
+                // Update the display for Strategy 1
+                if (strategy1Valid) {
+                    const roundedQ4 = Math.max(0, Math.ceil(minQ4Needed * 100) / 100);
+                    document.getElementById('minQ4').innerText = roundedQ4.toFixed(2) + '%';
+                    document.getElementById('maxFinal').innerText = finalExamMax + '%';
+                    document.getElementById('strategy1').style.display = 'block';
+                } else {
+                    document.getElementById('strategy1').style.display = 'none';
+                }
+                
+                // Update the display for Strategy 2
+                if (strategy2Valid) {
+                    const roundedFinal = Math.max(0, Math.ceil(minFinalNeeded * 100) / 100);
+                    document.getElementById('maxQ4').innerText = q4Max + '%';
+                    document.getElementById('minFinal').innerText = roundedFinal.toFixed(2) + '%';
+                    document.getElementById('strategy2').style.display = 'block';
+                } else {
+                    document.getElementById('strategy2').style.display = 'none';
+                }
+                
+                // Show/hide the optimal combinations section
+                document.getElementById('optimalCombos').style.display = (strategy1Valid || strategy2Valid) ? 'flex' : 'none';
+                
+                // Update section title for CP/Honors
+                document.getElementById('gradePairsTitle').innerText = 'Optimal Grade Strategies';
+                
+                // Update strategy titles for CP/Honors
+                document.getElementById('strategy1Title').innerText = 'Strategy 1: Focus on Final Exam';
+                document.getElementById('strategy2Title').innerText = 'Strategy 2: Focus on Quarter 4';
+                
+                // Update strategy descriptions for CP/Honors
+                document.getElementById('strategy1Desc').innerText = 'This strategy minimizes your Quarter 4 grade while maximizing your Final Exam performance.';
+                document.getElementById('strategy2Desc').innerText = 'This strategy maximizes your Quarter 4 grade while minimizing your Final Exam performance.';
+                
+                // Update labels for CP/Honors
+                document.getElementById('minQ4Label').innerText = 'Quarter 4 (Minimum)';
+                document.getElementById('maxFinalLabel').innerText = 'Final Exam (Maximum)';
+                document.getElementById('maxQ4Label').innerText = 'Quarter 4 (Maximum)';
+                document.getElementById('minFinalLabel').innerText = 'Final Exam (Minimum)';
+            } else {
+                // For AP classes
+                if (!hasMidterm) {
+                    // If midterm is not entered, show strategies for Q4 and Midterm
+                    // Strategy 1: Lowest Q4, Highest Midterm
+                    const midtermMax = 100;
+                    const midtermMaxContribution = midtermMax * 12;
+                    const minQ4Needed = (targetSum - midtermMaxContribution) / 22;
+                    
+                    // Strategy 2: Highest Q4, Lowest Midterm
+                    const q4Max = 100;
+                    const q4MaxContribution = q4Max * 22;
+                    const minMidtermNeeded = (targetSum - q4MaxContribution) / 12;
+                    
+                    // Check if these are valid combinations
+                    let strategy1Valid = minQ4Needed >= 0 && minQ4Needed <= 100;
+                    let strategy2Valid = minMidtermNeeded >= 0 && minMidtermNeeded <= 100;
+                    
+                    // Update the display for Strategy 1
+                    if (strategy1Valid) {
+                        const roundedQ4 = Math.max(0, Math.ceil(minQ4Needed * 100) / 100);
+                        document.getElementById('minQ4').innerText = roundedQ4.toFixed(2) + '%';
+                        document.getElementById('maxFinal').innerText = midtermMax + '%';
+                        document.getElementById('strategy1').style.display = 'block';
+                    } else {
+                        document.getElementById('strategy1').style.display = 'none';
+                    }
+                    
+                    // Update the display for Strategy 2
+                    if (strategy2Valid) {
+                        const roundedMidterm = Math.max(0, Math.ceil(minMidtermNeeded * 100) / 100);
+                        document.getElementById('maxQ4').innerText = q4Max + '%';
+                        document.getElementById('minFinal').innerText = roundedMidterm.toFixed(2) + '%';
+                        document.getElementById('strategy2').style.display = 'block';
+                    } else {
+                        document.getElementById('strategy2').style.display = 'none';
+                    }
+                    
+                    // Show/hide the optimal combinations section
+                    document.getElementById('optimalCombos').style.display = (strategy1Valid || strategy2Valid) ? 'flex' : 'none';
+                    
+                    // Update section title for AP
+                    document.getElementById('gradePairsTitle').innerText = 'Optimal AP Grade Strategies';
+                    
+                    // Update strategy titles for AP
+                    document.getElementById('strategy1Title').innerText = 'Strategy 1: Focus on Midterm';
+                    document.getElementById('strategy2Title').innerText = 'Strategy 2: Focus on Quarter 4';
+                    
+                    // Update strategy descriptions for AP
+                    document.getElementById('strategy1Desc').innerText = 'This strategy minimizes your Quarter 4 grade while maximizing your Midterm performance.';
+                    document.getElementById('strategy2Desc').innerText = 'This strategy maximizes your Quarter 4 grade while minimizing your Midterm performance.';
+                    
+                    // Update labels for AP
+                    document.getElementById('minQ4Label').innerText = 'Quarter 4 (Minimum)';
+                    document.getElementById('maxFinalLabel').innerText = 'Midterm (Maximum)';
+                    document.getElementById('maxQ4Label').innerText = 'Quarter 4 (Maximum)';
+                    document.getElementById('minFinalLabel').innerText = 'Midterm (Minimum)';
+                } else {
+                    // If midterm is already entered, just show the required Q4 grade
+                    const neededQ4 = targetSum / 22;
+                    
+                    // Check if it's a valid grade
+                    let validGrade = neededQ4 >= 0 && neededQ4 <= 100;
+                    
+                    if (validGrade) {
+                        // Only show strategy 1 and hide strategy 2
+                        const roundedQ4 = Math.max(0, Math.ceil(neededQ4 * 100) / 100);
+                        document.getElementById('minQ4').innerText = roundedQ4.toFixed(2) + '%';
+                        document.getElementById('maxFinal').innerText = 'N/A';
+                        document.getElementById('strategy1').style.display = 'block';
+                        document.getElementById('strategy2').style.display = 'none';
+                        
+                        // Update section title for AP
+                        document.getElementById('gradePairsTitle').innerText = 'Required Quarter 4 Grade';
+                        
+                        // Update strategy title for AP
+                        document.getElementById('strategy1Title').innerText = 'Quarter 4 Grade Needed';
+                        
+                        // Update strategy description for AP
+                        document.getElementById('strategy1Desc').innerText = 'This is the grade you need to achieve in Quarter 4 to reach your desired final grade.';
+                        
+                        // Update labels for AP
+                        document.getElementById('minQ4Label').innerText = 'Quarter 4';
+                        document.getElementById('maxFinalLabel').innerText = '';
+                    } else {
+                        document.getElementById('strategy1').style.display = 'none';
+                        document.getElementById('strategy2').style.display = 'none';
+                    }
+                    
+                    // Show/hide the optimal combinations section
+                    document.getElementById('optimalCombos').style.display = validGrade ? 'flex' : 'none';
+                }
+            }
+
+            // For AP classes with both Q3 and Q4 blank
+            /*
+            if (!hasMidterm) {
+                // If midterm is not entered, show strategies for Q3, Q4, and Midterm
+                // Strategy 1: Focus on Midterm and Q4
+                const midtermMax = 100;
+                const q4Max = 100;
+                const midtermQ4MaxContribution = (midtermMax * 12) + (q4Max * 22);
+                const minQ3Needed = (targetSum - midtermQ4MaxContribution) / 22;
+                
+                // Strategy 2: Focus on Q3 and Q4
+                const q3Max = 100;
+                const q3Q4MaxContribution = (q3Max * 22) + (q4Max * 22);
+                const minMidtermNeeded = (targetSum - q3Q4MaxContribution) / 12;
+                
+                // Check if these are valid combinations
+                let strategy1Valid = minQ3Needed >= 0 && minQ3Needed <= 100;
+                let strategy2Valid = minMidtermNeeded >= 0 && minMidtermNeeded <= 100;
+                
+                // Update the display for Strategy 1
+                if (strategy1Valid) {
+                    const roundedQ3 = Math.max(0, Math.ceil(minQ3Needed * 100) / 100);
+                    document.getElementById('minQ4').innerText = roundedQ3.toFixed(2) + '%';
+                    document.getElementById('maxFinal').innerText = '100% / 100%';
+                    document.getElementById('strategy1').style.display = 'block';
+                } else {
+                    document.getElementById('strategy1').style.display = 'none';
+                }
+                
+                // Update the display for Strategy 2
+                if (strategy2Valid) {
+                    const roundedMidterm = Math.max(0, Math.ceil(minMidtermNeeded * 100) / 100);
+                    document.getElementById('maxQ4').innerText = '100% / 100%';
+                    document.getElementById('minFinal').innerText = roundedMidterm.toFixed(2) + '%';
+                    document.getElementById('strategy2').style.display = 'block';
+                } else {
+                    document.getElementById('strategy2').style.display = 'none';
+                }
+                
+                // Show/hide the optimal combinations section
+                document.getElementById('optimalCombos').style.display = (strategy1Valid || strategy2Valid) ? 'flex' : 'none';
+                
+                // Update section title for AP
+                document.getElementById('gradePairsTitle').innerText = 'Optimal AP Grade Strategies';
+                
+                // Update strategy titles for AP
+                document.getElementById('strategy1Title').innerText = 'Strategy 1: Focus on Midterm & Q4';
+                document.getElementById('strategy2Title').innerText = 'Strategy 2: Focus on Q3 & Q4';
+                
+                // Update strategy descriptions for AP
+                document.getElementById('strategy1Desc').innerText = 'This strategy minimizes your Quarter 3 grade while maximizing your Midterm and Quarter 4 performance.';
+                document.getElementById('strategy2Desc').innerText = 'This strategy maximizes your Quarter 3 and Quarter 4 grades while minimizing your Midterm performance.';
+                
+                // Update labels for AP
+                document.getElementById('minQ4Label').innerText = 'Quarter 3 (Minimum)';
+                document.getElementById('maxFinalLabel').innerText = 'Midterm / Q4 (Maximum)';
+                document.getElementById('maxQ4Label').innerText = 'Q3 / Q4 (Maximum)';
+                document.getElementById('minFinalLabel').innerText = 'Midterm (Minimum)';
+            }
+            */
+        }
+
+        function calculateAPQ3Q4Strategy(currentWeightedSum, desiredGrade) {
+            // Calculate the target sum needed
+            const targetSum = (desiredGrade * 100) - currentWeightedSum;
             
-            // Strategy 2: Highest Q4, Lowest Final
-            const q4Max = 100;
-            const q4MaxContribution = q4Max * 20;
-            const minFinalNeeded = (targetSum - q4MaxContribution) / 10;
+            // Calculate the average grade needed for Q3 and Q4 combined
+            const avgNeeded = targetSum / 44; // 22% for Q3 + 22% for Q4
             
-            // Check if these are valid combinations
-            let strategy1Valid = minQ4Needed >= 0 && minQ4Needed <= 100;
-            let strategy2Valid = minFinalNeeded >= 0 && minFinalNeeded <= 100;
+            // Check if it's a valid grade
+            let validGrade = avgNeeded >= 0 && avgNeeded <= 100;
             
-            // Update the display for Strategy 1
-            if (strategy1Valid) {
-                const roundedQ4 = Math.max(0, Math.ceil(minQ4Needed * 100) / 100);
-                document.getElementById('minQ4').innerText = roundedQ4.toFixed(2) + '%';
-                document.getElementById('maxFinal').innerText = finalExamMax + '%';
+            if (validGrade) {
+                const roundedAvg = Math.max(0, Math.ceil(avgNeeded * 100) / 100);
+                
+                // Only show strategy 1 and hide strategy 2
+                document.getElementById('minQ4').innerText = roundedAvg.toFixed(2) + '%';
                 document.getElementById('strategy1').style.display = 'block';
+                document.getElementById('strategy2').style.display = 'none';
+                
+                // Update section title for AP
+                document.getElementById('gradePairsTitle').innerText = 'Required Average for Q3 and Q4';
+                
+                // Update strategy title for AP
+                document.getElementById('strategy1Title').innerText = 'Average Grade Needed';
+                
+                // Update strategy description for AP
+                document.getElementById('strategy1Desc').innerText = 'This is the average grade you need to achieve in both Quarter 3 and Quarter 4 to reach your desired final grade.';
+                
+                // Update labels for AP
+                document.getElementById('minQ4Label').innerText = 'Q3 & Q4 Average';
+                document.getElementById('maxFinalLabel').innerText = '';
+                document.getElementById('maxFinal').innerText = '';
             } else {
                 document.getElementById('strategy1').style.display = 'none';
-            }
-            
-            // Update the display for Strategy 2
-            if (strategy2Valid) {
-                const roundedFinal = Math.max(0, Math.ceil(minFinalNeeded * 100) / 100);
-                document.getElementById('maxQ4').innerText = q4Max + '%';
-                document.getElementById('minFinal').innerText = roundedFinal.toFixed(2) + '%';
-                document.getElementById('strategy2').style.display = 'block';
-            } else {
                 document.getElementById('strategy2').style.display = 'none';
             }
             
             // Show/hide the optimal combinations section
-            document.getElementById('optimalCombos').style.display = (strategy1Valid || strategy2Valid) ? 'flex' : 'none';
+            document.getElementById('optimalCombos').style.display = validGrade ? 'flex' : 'none';
         }
 
         function toggleFinalField() {
@@ -615,42 +867,42 @@
             </div>
             <!-- Grade Pairs Section -->
             <div id="gradePairsSection" class="grade-pairs-section">
-                <h3>Optimal Grade Strategies</h3>
+                <h3 id="gradePairsTitle">Optimal Grade Strategies</h3>
                 
                 <!-- Optimal Combinations Section -->
                 <div id="optimalCombos" class="optimal-combos">
                     <!-- Strategy 1: Min Q4, Max Final -->
                     <div id="strategy1" class="optimal-combo">
-                        <h4>Strategy 1: Focus on Final Exam</h4>
+                        <h4 id="strategy1Title">Strategy 1: Focus on Final Exam</h4>
                         <div class="optimal-grades">
                             <div class="optimal-grade-item">
                                 <div class="optimal-grade-value" id="minQ4">0%</div>
-                                <div class="optimal-grade-label">Quarter 4 (Minimum)</div>
+                                <div class="optimal-grade-label" id="minQ4Label">Quarter 4 (Minimum)</div>
                             </div>
                             <div class="optimal-grade-item">
                                 <div class="optimal-grade-value" id="maxFinal">100%</div>
-                                <div class="optimal-grade-label">Final Exam (Maximum)</div>
+                                <div class="optimal-grade-label" id="maxFinalLabel">Final Exam (Maximum)</div>
                             </div>
                         </div>
-                        <div class="strategy-description">
+                        <div class="strategy-description" id="strategy1Desc">
                             This strategy minimizes your Quarter 4 grade while maximizing your Final Exam performance.
                         </div>
                     </div>
                     
                     <!-- Strategy 2: Max Q4, Min Final -->
                     <div id="strategy2" class="optimal-combo">
-                        <h4>Strategy 2: Focus on Quarter 4</h4>
+                        <h4 id="strategy2Title">Strategy 2: Focus on Quarter 4</h4>
                         <div class="optimal-grades">
                             <div class="optimal-grade-item">
                                 <div class="optimal-grade-value" id="maxQ4">100%</div>
-                                <div class="optimal-grade-label">Quarter 4 (Maximum)</div>
+                                <div class="optimal-grade-label" id="maxQ4Label">Quarter 4 (Maximum)</div>
                             </div>
                             <div class="optimal-grade-item">
                                 <div class="optimal-grade-value" id="minFinal">0%</div>
-                                <div class="optimal-grade-label">Final Exam (Minimum)</div>
+                                <div class="optimal-grade-label" id="minFinalLabel">Final Exam (Minimum)</div>
                             </div>
                         </div>
-                        <div class="strategy-description">
+                        <div class="strategy-description" id="strategy2Desc">
                             This strategy maximizes your Quarter 4 grade while minimizing your Final Exam performance.
                         </div>
                     </div>
