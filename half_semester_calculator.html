@@ -316,7 +316,7 @@
                       let currentWeighted = (quarter1 * 0.4) + (quarter2 * 0.4);
                       let neededFinalExam = ((desiredGrade - currentWeighted) / 0.2);
                       
-                      if (neededFinalExam > 100) {
+                      if (neededFinalExam >= 999.99) {
                           resultText += "<br>Unfortunately, it's not possible to achieve your desired grade.";
                       } else if (neededFinalExam < 0) {
                           resultText += "<br>You have already achieved your desired grade!";
@@ -329,7 +329,7 @@
                       let remainingWeight = 1 - totalWeight;
                       let neededAvg = remainingWeight > 0 ? ((desiredGrade - weightedSum) / remainingWeight) : 0;
                       
-                      if (neededAvg > 100) {
+                      if (neededAvg >= 999.99) {
                           resultText += "<br>Unfortunately, it's not possible to achieve your desired grade.";
                       } else if (neededAvg < 0) {
                           resultText += "<br>You have already achieved your desired grade!";
