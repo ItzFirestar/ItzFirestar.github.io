@@ -1,365 +1,424 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Half-Year Grade Calculator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        :root {
-            --primary-bg: #1a1a1a;
-            --secondary-bg: #2E2E2E;
-            --input-bg: #3B3B3B;
-            --text-color: #F1F1F1;
-            --text-secondary: #D1D1D1;
-            --accent-color: #4CAF50;
-            --accent-hover: #45a049;
-            --link-color: #64B5F6;
-            --border-color: #555;
-            --card-bg: #333333;
-            --nav-bg: #222222;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Half-Year Grade Calculator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+      :root {
+          --primary-bg: #1a1a1a;
+          --secondary-bg: #2E2E2E;
+          --input-bg: #3B3B3B;
+          --text-color: #F1F1F1;
+          --text-secondary: #D1D1D1;
+          --accent-color: #4CAF50;
+          --accent-hover: #45a049;
+          --link-color: #64B5F6;
+          --border-color: #555;
+          --card-bg: #333333;
+          --nav-bg: #222222;
+      }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+      }
 
-        body {
-            background-color: var(--primary-bg);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            padding-bottom: 2rem;
-        }
+      body {
+          background-color: var(--primary-bg);
+          color: var(--text-color);
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          padding-bottom: 2rem;
+      }
 
-        .navbar {
-            background-color: var(--nav-bg);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+      .navbar {
+          background-color: var(--nav-bg);
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+          position: sticky;
+          top: 0;
+          z-index: 100;
+      }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
+      .container {
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 1rem;
+      }
 
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-        }
+      .nav-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem;
+      }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--text-color);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-        }
+      .logo {
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: var(--text-color);
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+      }
 
-        .logo i {
-            margin-right: 0.5rem;
-            color: var(--accent-color);
-        }
+      .logo i {
+          margin-right: 0.5rem;
+          color: var(--accent-color);
+      }
 
-        .nav-links {
-            display: flex;
-            list-style: none;
-        }
+      .nav-links {
+          display: flex;
+          list-style: none;
+      }
 
-        .nav-links li {
-            margin-left: 1.5rem;
-        }
+      .nav-links li {
+          margin-left: 1.5rem;
+      }
 
-        .nav-links a {
-            color: var(--text-color);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-            display: flex;
-            align-items: center;
-        }
+      .nav-links a {
+          color: var(--text-color);
+          text-decoration: none;
+          font-weight: 500;
+          transition: color 0.3s;
+          display: flex;
+          align-items: center;
+      }
 
-        .nav-links a:hover {
-            color: var(--accent-color);
-        }
+      .nav-links a:hover {
+          color: var(--accent-color);
+      }
 
-        .nav-links a.active {
-            color: var(--accent-color);
-            font-weight: 600;
-        }
+      .nav-links a.active {
+          color: var(--accent-color);
+          font-weight: 600;
+      }
 
-        .nav-links a i {
-            margin-right: 0.5rem;
-        }
+      .nav-links a i {
+          margin-right: 0.5rem;
+      }
 
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-color);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
+      .mobile-menu-btn {
+          display: none;
+          background: none;
+          border: none;
+          color: var(--text-color);
+          font-size: 1.5rem;
+          cursor: pointer;
+      }
 
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            padding: 2rem;
-            margin: 2rem 0;
-        }
+      .card {
+          background-color: var(--card-bg);
+          border-radius: 10px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          padding: 2rem;
+          margin: 2rem 0;
+      }
 
-        h2 {
-            color: var(--text-color);
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-            text-align: center;
-            font-size: 1.8rem;
-        }
+      h2 {
+          color: var(--text-color);
+          margin-bottom: 1.5rem;
+          font-weight: 600;
+          text-align: center;
+          font-size: 1.8rem;
+      }
 
-        h3 {
-            color: var(--text-color);
-            margin: 1rem 0;
-            font-weight: 500;
-        }
+      h3 {
+          color: var(--text-color);
+          margin: 1rem 0;
+          font-weight: 500;
+      }
 
-        .form-group {
-            margin-bottom: 1rem;
-        }
+      .form-group {
+          margin-bottom: 1rem;
+      }
 
-        label {
-            display: block;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
+      label {
+          display: block;
+          color: var(--text-secondary);
+          margin-bottom: 0.5rem;
+          font-weight: 500;
+      }
 
-        input {
-            background-color: var(--input-bg);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            padding: 0.75rem;
-            width: 100%;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
+      input {
+          background-color: var(--input-bg);
+          color: var(--text-color);
+          border: 1px solid var(--border-color);
+          border-radius: 5px;
+          padding: 0.75rem;
+          width: 100%;
+          font-size: 1rem;
+          transition: border-color 0.3s;
+      }
 
-        input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
+      input:focus {
+          outline: none;
+          border-color: var(--accent-color);
+      }
 
-        .input-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
+      .input-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+          margin-bottom: 1rem;
+      }
 
-        .input-group {
-            flex: 1;
-            min-width: 200px;
-        }
+      .input-group {
+          flex: 1;
+          min-width: 200px;
+      }
 
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-            margin: 1.5rem 0;
-            flex-wrap: wrap;
-        }
+      .btn-group {
+          display: flex;
+          gap: 1rem;
+          margin: 1.5rem 0;
+          flex-wrap: wrap;
+      }
 
-        button {
-            cursor: pointer;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background-color 0.3s;
-            flex: 1;
-            min-width: 150px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+      button {
+          cursor: pointer;
+          background-color: var(--accent-color);
+          color: white;
+          border: none;
+          border-radius: 5px;
+          padding: 0.75rem 1.5rem;
+          font-size: 1rem;
+          font-weight: 500;
+          transition: background-color 0.3s;
+          flex: 1;
+          min-width: 150px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
 
-        button:hover {
-            background-color: var(--accent-hover);
-        }
+      button:hover {
+          background-color: var(--accent-hover);
+      }
 
-        button i {
-            margin-right: 0.5rem;
-        }
+      button i {
+          margin-right: 0.5rem;
+      }
 
-        .btn-clear {
-            background-color: #f44336;
-        }
+      .btn-clear {
+          background-color: #f44336;
+      }
 
-        .btn-clear:hover {
-            background-color: #d32f2f;
-        }
+      .btn-clear:hover {
+          background-color: #d32f2f;
+      }
 
-        .result-section {
-            background-color: var(--secondary-bg);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-        }
+      .result-section {
+          background-color: var(--secondary-bg);
+          border-radius: 8px;
+          padding: 1.5rem;
+          margin-top: 1.5rem;
+      }
 
-        .result-section h3 {
-            margin-top: 0;
-            color: var(--accent-color);
-        }
+      .result-section h3 {
+          margin-top: 0;
+          color: var(--accent-color);
+      }
 
-        .footer {
-            text-align: center;
-            padding: 1rem 0;
-            margin-top: 2rem;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
+      .footer {
+          text-align: center;
+          padding: 1rem 0;
+          margin-top: 2rem;
+          color: var(--text-secondary);
+          font-size: 0.9rem;
+      }
 
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 60px;
-                left: 0;
-                right: 0;
-                background-color: var(--nav-bg);
-                flex-direction: column;
-                padding: 1rem;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            }
+      @media (max-width: 768px) {
+          .nav-links {
+              display: none;
+              position: absolute;
+              top: 60px;
+              left: 0;
+              right: 0;
+              background-color: var(--nav-bg);
+              flex-direction: column;
+              padding: 1rem;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          }
 
-            .nav-links.active {
-                display: flex;
-            }
+          .nav-links.active {
+              display: flex;
+          }
 
-            .nav-links li {
-                margin: 0.5rem 0;
-            }
+          .nav-links li {
+              margin: 0.5rem 0;
+          }
 
-            .mobile-menu-btn {
-                display: block;
-            }
+          .mobile-menu-btn {
+              display: block;
+          }
 
-            .card {
-                padding: 1.5rem;
-                margin: 1rem 0;
-            }
+          .card {
+              padding: 1.5rem;
+              margin: 1rem 0;
+          }
 
-            .input-group {
-                min-width: 100%;
-            }
-        }
-    </style>
-    <script>
-        function toggleMenu() {
-            const navLinks = document.querySelector('.nav-links');
-            navLinks.classList.toggle('active');
-        }
+          .input-group {
+              min-width: 100%;
+          }
+      }
+  </style>
+  <script>
+      function toggleMenu() {
+          const navLinks = document.querySelector('.nav-links');
+          navLinks.classList.toggle('active');
+      }
 
-        function calculateNeededFinalGrade() {
-            let quarter1 = parseFloat(document.getElementById("q1").value) || 0;
-            let quarter2 = parseFloat(document.getElementById("q2").value) || 0;
-            let desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+      function calculateFinalGrade() {
+          let quarter1 = parseFloat(document.getElementById("q1").value) || 0;
+          let quarter2 = parseFloat(document.getElementById("q2").value) || 0;
+          let finalExam = parseFloat(document.getElementById("finalExam").value) || 0;
+          let desiredGrade = parseFloat(document.getElementById("desiredGrade").value);
+          
+          // Calculate current grade based on provided values
+          let hasQ1 = !isNaN(quarter1) && document.getElementById("q1").value !== "";
+          let hasQ2 = !isNaN(quarter2) && document.getElementById("q2").value !== "";
+          let hasFinalExam = !isNaN(finalExam) && document.getElementById("finalExam").value !== "";
+          
+          let resultText = "";
+          
+          // If we have at least one quarter, calculate current grade
+          if (hasQ1 || hasQ2 || hasFinalExam) {
+              let totalWeight = 0;
+              let weightedSum = 0;
+              
+              if (hasQ1) {
+                  weightedSum += quarter1 * 0.4;
+                  totalWeight += 0.4;
+              }
+              
+              if (hasQ2) {
+                  weightedSum += quarter2 * 0.4;
+                  totalWeight += 0.4;
+              }
+              
+              if (hasFinalExam) {
+                  weightedSum += finalExam * 0.2;
+                  totalWeight += 0.2;
+              }
+              
+              // Calculate current grade based on provided components
+              let currentGrade = totalWeight > 0 ? weightedSum / totalWeight : 0;
+              resultText = "Current Grade: " + currentGrade.toFixed(2) + "%";
+              
+              // If desired grade is provided, calculate needed final exam grade
+              if (!isNaN(desiredGrade) && desiredGrade > 0) {
+                  // If both quarters are provided but final exam is not
+                  if (hasQ1 && hasQ2 && !hasFinalExam) {
+                      let currentWeighted = (quarter1 * 0.4) + (quarter2 * 0.4);
+                      let neededFinalExam = ((desiredGrade - currentWeighted) / 0.2);
+                      
+                      if (neededFinalExam > 100) {
+                          resultText += "<br>Unfortunately, it's not possible to achieve your desired grade.";
+                      } else if (neededFinalExam < 0) {
+                          resultText += "<br>You have already achieved your desired grade!";
+                      } else {
+                          resultText += "<br>You need a " + neededFinalExam.toFixed(2) + "% on the Final Exam.";
+                      }
+                  }
+                  // If we're missing some quarters, calculate the average needed
+                  else if (!hasQ1 || !hasQ2 || !hasFinalExam) {
+                      let remainingWeight = 1 - totalWeight;
+                      let neededAvg = remainingWeight > 0 ? ((desiredGrade - weightedSum) / remainingWeight) : 0;
+                      
+                      if (neededAvg > 100) {
+                          resultText += "<br>Unfortunately, it's not possible to achieve your desired grade.";
+                      } else if (neededAvg < 0) {
+                          resultText += "<br>You have already achieved your desired grade!";
+                      } else {
+                          resultText += "<br>You need an average of " + neededAvg.toFixed(2) + "% on the remaining components.";
+                      }
+                  }
+              }
+          } else if (!isNaN(desiredGrade) && desiredGrade > 0) {
+              // If only desired grade is provided
+              resultText = "Please enter at least one quarter grade to calculate.";
+          } else {
+              resultText = "Please enter at least one grade to calculate.";
+          }
+          
+          document.getElementById("result").innerHTML = resultText;
+      }
 
-            if (isNaN(desiredGrade) || desiredGrade < 0 || desiredGrade > 100) {
-                alert("Please enter a valid desired final grade between 0 and 100.");
-                return;
-            }
-
-            let currentWeighted = (quarter1 * 0.4) + (quarter2 * 0.4);
-            let neededFinalExam = ((desiredGrade - currentWeighted) / 0.2);
-
-            let resultText = "";
-            if (neededFinalExam > 100) {
-                resultText = "Unfortunately, it's not possible to achieve your desired grade.";
-            } else if (neededFinalExam < 0) {
-                resultText = "You have already achieved your desired grade!";
-            } else {
-                resultText = "You need a " + neededFinalExam.toFixed(2) + "% on the Final Exam.";
-            }
-
-            document.getElementById("result").innerText = resultText;
-        }
-
-        function clearFields() {
-            document.getElementById("q1").value = "";
-            document.getElementById("q2").value = "";
-            document.getElementById("desiredGrade").value = "";
-            document.getElementById("result").innerText = "";
-        }
-    </script>
+      function clearFields() {
+          document.getElementById("q1").value = "";
+          document.getElementById("q2").value = "";
+          document.getElementById("finalExam").value = "";
+          document.getElementById("desiredGrade").value = "";
+          document.getElementById("result").innerHTML = "";
+      }
+  </script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="index.html" class="logo">
-                <i class="fas fa-calculator"></i>
-                Grade Calculator
-            </a>
-            <button class="mobile-menu-btn" onclick="toggleMenu()">
-                <i class="fas fa-bars"></i>
-            </button>
-            <ul class="nav-links">
-                <li><a href="index.html"><i class="fas fa-home"></i> Full-Year Calculator</a></li>
-                <li><a href="half_semester_calculator.html" class="active"><i class="fas fa-calendar-alt"></i> Half-Year Calculator</a></li>
-            </ul>
-        </div>
-    </nav>
+  <nav class="navbar">
+      <div class="nav-container">
+          <a href="index.html" class="logo">
+              <i class="fas fa-calculator"></i>
+              Grade Calculator
+          </a>
+          <button class="mobile-menu-btn" onclick="toggleMenu()">
+              <i class="fas fa-bars"></i>
+          </button>
+          <ul class="nav-links">
+              <li><a href="index.html"><i class="fas fa-home"></i> Full-Year Calculator</a></li>
+              <li><a href="half_semester_calculator.html" class="active"><i class="fas fa-calendar-alt"></i> Half-Year Calculator</a></li>
+          </ul>
+      </div>
+  </nav>
 
-    <div class="container">
-        <div class="card">
-            <h2>Half-Year Grade Calculator</h2>
-            
-            <div class="input-row">
-                <div class="input-group">
-                    <label for="q1">Quarter 1 Grade (%)</label>
-                    <input type="number" id="q1" min="0" max="100" placeholder="Enter grade">
-                </div>
-                <div class="input-group">
-                    <label for="q2">Quarter 2 Grade (%)</label>
-                    <input type="number" id="q2" min="0" max="100" placeholder="Enter grade">
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="desiredGrade">Desired Final Grade (%)</label>
-                <input type="number" id="desiredGrade" min="0" max="100" placeholder="Enter your target grade">
-            </div>
-            
-            <div class="btn-group">
-                <button onclick="calculateNeededFinalGrade()">
-                    <i class="fas fa-calculator"></i> Calculate Needed Final Exam Score
-                </button>
-                <button class="btn-clear" onclick="clearFields()">
-                    <i class="fas fa-trash-alt"></i> Clear All Fields
-                </button>
-            </div>
-            
-            <div class="result-section">
-                <h3>Result: <span id="result"></span></h3>
-            </div>
-        </div>
-    </div>
-    <footer class="footer">
-        <div class="container">
-            <p>Created by Advaith S, 2025</p>
-        </div>
-    </footer>
+  <div class="container">
+      <div class="card">
+          <h2>Half-Year Grade Calculator</h2>
+          
+          <div class="input-row">
+              <div class="input-group">
+                  <label for="q1">Quarter 1 Grade (%)</label>
+                  <input type="number" id="q1" min="0" max="100" placeholder="Enter grade">
+              </div>
+              <div class="input-group">
+                  <label for="q2">Quarter 2 Grade (%)</label>
+                  <input type="number" id="q2" min="0" max="100" placeholder="Enter grade">
+              </div>
+          </div>
+          
+          <div class="input-row">
+              <div class="input-group">
+                  <label for="finalExam">Final Exam Grade (%)</label>
+                  <input type="number" id="finalExam" min="0" max="100" placeholder="Enter grade">
+              </div>
+          </div>
+          
+          <div class="form-group">
+              <label for="desiredGrade">Desired Final Grade (%) (Optional)</label>
+              <input type="number" id="desiredGrade" min="0" max="100" placeholder="Enter your target grade">
+          </div>
+          
+          <div class="btn-group">
+              <button onclick="calculateFinalGrade()">
+                  <i class="fas fa-calculator"></i> Calculate Grade
+              </button>
+              <button class="btn-clear" onclick="clearFields()">
+                  <i class="fas fa-trash-alt"></i> Clear All Fields
+              </button>
+          </div>
+          
+          <div class="result-section">
+              <h3>Result: <span id="result"></span></h3>
+          </div>
+      </div>
+  </div>
+  <footer class="footer">
+      <div class="container">
+          <p>Created by Advaith S, 2025</p>
+      </div>
+  </footer>
 </body>
 </html>
