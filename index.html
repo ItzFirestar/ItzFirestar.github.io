@@ -447,7 +447,7 @@
                 let minAvgNeeded = (desiredGrade * 100 - currentWeightedSum) / remainingWeight;
                 
                 // Check if it's possible to achieve the desired grade
-                if (minAvgNeeded > 100) {
+                if (minAvgNeeded >= 999.99) {
                     gradePairsSection.style.display = 'none';
                     return;
                 } else if (minAvgNeeded < 0) {
@@ -482,6 +482,8 @@
 
                 let remainingWeight = quarterWeights + quarterWeights; // Q3 + Q4
                 if (!hasMidterm) {
+                    remainingWeight += midtermWeight;  // Q3 + Q4
+                if (!hasMidterm) {
                     remainingWeight += midtermWeight; // Add midterm weight if not entered
                 }
                 
@@ -489,7 +491,7 @@
                 let minAvgNeeded = (desiredGrade * 100 - currentWeightedSum) / remainingWeight;
                 
                 // Check if it's possible to achieve the desired grade
-                if (minAvgNeeded > 100) {
+                if (minAvgNeeded >= 999.99) {
                     gradePairsSection.style.display = 'none';
                     return;
                 } else if (minAvgNeeded < 0) {
@@ -529,7 +531,7 @@
                 let minAvgNeeded = (desiredGrade * 100 - currentWeightedSum) / remainingWeight;
                 
                 // Check if it's possible to achieve the desired grade
-                if (minAvgNeeded > 100) {
+                if (minAvgNeeded >= 999.99) {
                     gradePairsSection.style.display = 'none';
                     return;
                 } else if (minAvgNeeded < 0) {
@@ -567,23 +569,51 @@
             if (numQuarters == 3) {
                 remainingWeight = quarterWeights + ((classType !== "AP" || apHasFinal) ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
-                resultText = "You need a " + requiredGrade.toFixed(2) + "% in Quarter 4" + 
-                             ((classType !== "AP" || apHasFinal) ? " and " + requiredGrade.toFixed(2) + "% on the final exam" : "") + 
-                             " to achieve your desired grade.";
+                
+                if (requiredGrade >= 999.99) {
+                    resultText = "Unfortunately, it's not possible to achieve your desired grade.";
+                } else if (requiredGrade < 0) {
+                    resultText = "You have already achieved your desired grade!";
+                } else {
+                    resultText = "You need a " + requiredGrade.toFixed(2) + "% in Quarter 4" + 
+                                 ((classType !== "AP" || apHasFinal) ? " and " + requiredGrade.toFixed(2) + "% on the final exam" : "") + 
+                                 " to achieve your desired grade.";
+                }
             } else if (numQuarters == 2 && !document.getElementById("midterm").value) {
                 remainingWeight = midtermWeight + (2 * quarterWeights) + ((classType !== "AP" || apHasFinal) ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
-                resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% on the midterm, next two quarters" + 
-                             ((classType !== "AP" || apHasFinal) ? " and the final exam." : ".");
+                
+                if (requiredGrade >= 999.99) {
+                    resultText = "Unfortunately, it's not possible to achieve your desired grade.";
+                } else if (requiredGrade < 0) {
+                    resultText = "You have already achieved your desired grade!";
+                } else {
+                    resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% on the midterm, next two quarters" + 
+                                 ((classType !== "AP" || apHasFinal) ? " and the final exam." : ".");
+                }
             } else if (numQuarters == 2 && document.getElementById("midterm").value) {
                 remainingWeight = (2 * quarterWeights) + ((classType !== "AP" || apHasFinal) ? finalExamWeight : 0);
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
-                resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% in the next two quarters" + 
-                             ((classType !== "AP" || apHasFinal) ? " and the final exam." : ".");
+                
+                if (requiredGrade >= 999.99) {
+                    resultText = "Unfortunately, it's not possible to achieve your desired grade.";
+                } else if (requiredGrade < 0) {
+                    resultText = "You have already achieved your desired grade!";
+                } else {
+                    resultText = "To achieve your desired grade, you need at least " + requiredGrade.toFixed(2) + "% in the next two quarters" + 
+                                 ((classType !== "AP" || apHasFinal) ? " and the final exam." : ".");
+                }
             } else if (numQuarters == 4 && (classType !== "AP" || apHasFinal) && !document.getElementById("final").value) {
                 remainingWeight = finalExamWeight;
                 requiredGrade = ((desiredGrade * (totalWeight + remainingWeight)) - weightedSum) / remainingWeight;
-                resultText = "You need a " + requiredGrade.toFixed(2) + "% on the final exam to achieve your desired grade.";
+                
+                if (requiredGrade >= 999.99) {
+                    resultText = "Unfortunately, it's not possible to achieve your desired grade.";
+                } else if (requiredGrade < 0) {
+                    resultText = "You have already achieved your desired grade!";
+                } else {
+                    resultText = "You need a " + requiredGrade.toFixed(2) + "% on the final exam to achieve your desired grade.";
+                }
             }
             
             document.getElementById("neededGrade").innerText = resultText;
@@ -605,8 +635,8 @@
             const minFinalNeeded = (targetSum - q4MaxContribution) / 10;
             
             // Check if these are valid combinations
-            let strategy1Valid = minQ4Needed >= 0 && minQ4Needed <= 100;
-            let strategy2Valid = minFinalNeeded >= 0 && minFinalNeeded <= 100;
+            let strategy1Valid = minQ4Needed < 999.99;
+            let strategy2Valid = minFinalNeeded < 999.99;
             
             // Update the display for Strategy 1
             if (strategy1Valid) {
@@ -664,8 +694,8 @@
             const minQ3Needed = (targetSum - q4MaxContribution) / quarterWeight;
             
             // Check if these are valid combinations
-            let strategy1Valid = minQ4Needed >= 0 && minQ4Needed <= 100;
-            let strategy2Valid = minQ3Needed >= 0 && minQ3Needed <= 100;
+            let strategy1Valid = minQ4Needed < 999.99;
+            let strategy2Valid = minQ3Needed < 999.99;
             
             // Update the display for Strategy 1
             if (strategy1Valid) {
@@ -724,8 +754,8 @@
             const minMidtermNeeded = (targetSum - quarterMaxContribution) / midtermWeight;
             
             // Check if these are valid combinations
-            let strategy1Valid = minQuarterNeeded >= 0 && minQuarterNeeded <= 100;
-            let strategy2Valid = minMidtermNeeded >= 0 && minMidtermNeeded <= 100;
+            let strategy1Valid = minQuarterNeeded < 999.99;
+            let strategy2Valid = minMidtermNeeded < 999.99;
             
             // Update the display for Strategy 1
             if (strategy1Valid) {
@@ -824,7 +854,7 @@
             </button>
             <ul class="nav-links">
                 <li><a href="index.html" class="active"><i class="fas fa-home"></i> Full-Year Calculator</a></li>
-                <li><a href="half_semester_calculator.html"><i class="fas fa-calendar-alt"></i> Half-Semester Calculator</a></li>
+                <li><a href="half_semester_calculator.html"><i class="fas fa-calendar-alt"></i> Half-Year Calculator</a></li>
             </ul>
         </div>
     </nav>
