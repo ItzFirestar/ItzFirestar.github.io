@@ -18,6 +18,7 @@
           --border-color: #555;
           --card-bg: #333333;
           --nav-bg: #222222;
+          --highlight-bg: rgba(76, 175, 80, 0.15);
       }
 
       * {
@@ -231,6 +232,72 @@
           font-size: 0.9rem;
       }
 
+      .grade-pairs-section {
+          display: none;
+          background-color: var(--secondary-bg);
+          border-radius: 8px;
+          padding: 1.5rem;
+          margin-top: 1.5rem;
+      }
+
+      .grade-pairs-section h3 {
+          color: var(--accent-color);
+          margin-bottom: 1rem;
+      }
+
+      .optimal-combos {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1.5rem;
+          margin: 1.5rem 0;
+      }
+
+      .optimal-combo {
+          background-color: var(--highlight-bg);
+          padding: 1.25rem;
+          border-radius: 5px;
+          border-left: 4px solid var(--accent-color);
+          flex: 1;
+          min-width: 280px;
+      }
+
+      .optimal-combo h4 {
+          color: var(--accent-color);
+          margin-bottom: 0.75rem;
+          font-weight: 600;
+      }
+
+      .optimal-grades {
+          display: flex;
+          justify-content: space-around;
+          margin: 1rem 0;
+          flex-wrap: wrap;
+          gap: 1rem;
+      }
+
+      .optimal-grade-item {
+          text-align: center;
+          flex: 1;
+          min-width: 120px;
+      }
+
+      .optimal-grade-value {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin-bottom: 0.25rem;
+      }
+
+      .optimal-grade-label {
+          color: var(--text-secondary);
+          font-size: 0.9rem;
+      }
+
+      .strategy-description {
+          margin-top: 0.75rem;
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+      }
+
       @media (max-width: 768px) {
           .nav-links {
               display: none;
@@ -345,7 +412,66 @@
               resultText = "Please enter at least one grade to calculate.";
           }
           
+          // Check if we should show the grade pairs section for half-year calculator
+          const gradePairsSection = document.getElementById('gradePairsSection');
+          
+          // If only Q1 is provided and desired grade is entered
+          if (hasQ1 && !hasQ2 && !hasFinalExam && !isNaN(desiredGrade) && desiredGrade > 0) {
+              // Calculate optimal strategies
+              calculateOptimalHalfYearStrategies(quarter1, desiredGrade);
+              
+              // Show the grade pairs section
+              gradePairsSection.style.display = 'block';
+          } else {
+              // Hide the grade pairs section
+              gradePairsSection.style.display = 'none';
+          }
+          
           document.getElementById("result").innerHTML = resultText;
+      }
+
+      function calculateOptimalHalfYearStrategies(q1Grade, desiredGrade) {
+          // Calculate the target sum needed
+          const targetSum = desiredGrade * 100;
+          const q1Contribution = q1Grade * 40; // Q1 is 40%
+          const remainingNeeded = targetSum - q1Contribution;
+          
+          // Strategy 1: Focus on Q2 (100% on Q2, minimum on Final)
+          const q2Max = 100;
+          const q2MaxContribution = q2Max * 40; // Q2 is 40%
+          const minFinalNeeded = (remainingNeeded - q2MaxContribution) / 20; // Final is 20%
+          
+          // Strategy 2: Focus on Final Exam (100% on Final, minimum on Q2)
+          const finalMax = 100;
+          const finalMaxContribution = finalMax * 20; // Final is 20%
+          const minQ2Needed = (remainingNeeded - finalMaxContribution) / 40; // Q2 is 40%
+          
+          // Check if these are valid combinations
+          let strategy1Valid = minFinalNeeded < 999.99;
+          let strategy2Valid = minQ2Needed < 999.99;
+          
+          // Update the display for Strategy 1
+          if (strategy1Valid) {
+              const roundedFinal = Math.max(0, Math.ceil(minFinalNeeded * 100) / 100);
+              document.getElementById('maxQ2').innerText = q2Max + '%';
+              document.getElementById('minFinal').innerText = roundedFinal.toFixed(2) + '%';
+              document.getElementById('strategy1').style.display = 'block';
+          } else {
+              document.getElementById('strategy1').style.display = 'none';
+          }
+          
+          // Update the display for Strategy 2
+          if (strategy2Valid) {
+              const roundedQ2 = Math.max(0, Math.ceil(minQ2Needed * 100) / 100);
+              document.getElementById('maxFinal').innerText = finalMax + '%';
+              document.getElementById('minQ2').innerText = roundedQ2.toFixed(2) + '%';
+              document.getElementById('strategy2').style.display = 'block';
+          } else {
+              document.getElementById('strategy2').style.display = 'none';
+          }
+          
+          // Show/hide the optimal combinations section
+          document.getElementById('optimalCombos').style.display = (strategy1Valid || strategy2Valid) ? 'flex' : 'none';
       }
 
       function clearFields() {
@@ -354,6 +480,8 @@
           document.getElementById("finalExam").value = "";
           document.getElementById("desiredGrade").value = "";
           document.getElementById("result").innerHTML = "";
+          // Hide the grade pairs section
+          document.getElementById('gradePairsSection').style.display = 'none';
       }
   </script>
 </head>
@@ -412,6 +540,50 @@
           
           <div class="result-section">
               <h3>Result: <span id="result"></span></h3>
+          </div>
+
+          <!-- Grade Pairs Section -->
+          <div id="gradePairsSection" class="grade-pairs-section">
+              <h3>Optimal Grade Strategies</h3>
+              
+              <!-- Optimal Combinations Section -->
+              <div id="optimalCombos" class="optimal-combos">
+                  <!-- Strategy 1: Max Q2, Min Final -->
+                  <div id="strategy1" class="optimal-combo">
+                      <h4>Strategy 1: Focus on Quarter 2</h4>
+                      <div class="optimal-grades">
+                          <div class="optimal-grade-item">
+                              <div class="optimal-grade-value" id="maxQ2">100%</div>
+                              <div class="optimal-grade-label">Quarter 2 (Maximum)</div>
+                          </div>
+                          <div class="optimal-grade-item">
+                              <div class="optimal-grade-value" id="minFinal">0%</div>
+                              <div class="optimal-grade-label">Final Exam (Minimum)</div>
+                          </div>
+                      </div>
+                      <div class="strategy-description">
+                          This strategy maximizes your Quarter 2 grade while minimizing your Final Exam performance.
+                      </div>
+                  </div>
+                  
+                  <!-- Strategy 2: Max Final, Min Q2 -->
+                  <div id="strategy2" class="optimal-combo">
+                      <h4>Strategy 2: Focus on Final Exam</h4>
+                      <div class="optimal-grades">
+                          <div class="optimal-grade-item">
+                              <div class="optimal-grade-value" id="minQ2">0%</div>
+                              <div class="optimal-grade-label">Quarter 2 (Minimum)</div>
+                          </div>
+                          <div class="optimal-grade-item">
+                              <div class="optimal-grade-value" id="maxFinal">100%</div>
+                              <div class="optimal-grade-label">Final Exam (Maximum)</div>
+                          </div>
+                      </div>
+                      <div class="strategy-description">
+                          This strategy maximizes your Final Exam grade while minimizing your Quarter 2 performance.
+                      </div>
+                  </div>
+              </div>
           </div>
       </div>
   </div>
