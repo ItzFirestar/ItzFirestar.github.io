@@ -410,12 +410,12 @@
             let midtermGrade = parseFloat(document.getElementById("midterm").value) || 0;
             let finalExamGrade = parseFloat(document.getElementById("final").value) || 0;
             
-            if (numQuarters >= 3 || (numQuarters == 2 && document.getElementById("midterm").value)) {
+            if (document.getElementById("midterm").value) {
                 weightedSum += midtermGrade * midtermWeight;
                 totalWeight += midtermWeight;
             }
             
-            if (numQuarters == 4 && (classType !== "AP" || apHasFinal) && document.getElementById("final").value) {
+            if ((classType !== "AP" || apHasFinal) && document.getElementById("final").value) {
                 weightedSum += finalExamGrade * finalExamWeight;
                 totalWeight += finalExamWeight;
             }
@@ -496,8 +496,6 @@
                 }
 
                 let remainingWeight = quarterWeights + quarterWeights; // Q3 + Q4
-                if (!hasMidterm) {
-                    remainingWeight += midtermWeight;  // Q3 + Q4
                 if (!hasMidterm) {
                     remainingWeight += midtermWeight; // Add midterm weight if not entered
                 }
