@@ -420,7 +420,22 @@
                 totalWeight += finalExamWeight;
             }
             
-            let finalGrade = (totalWeight > 0) ? (weightedSum / totalWeight) : 0;
+            // Calculate final grade based on the weights
+            let finalGrade;
+            if (totalWeight > 0) {
+                // If we have all quarters, midterm, and final (if applicable)
+                if (numQuarters === 4 && document.getElementById("midterm").value && 
+                    ((classType !== "AP" || apHasFinal) ? document.getElementById("final").value : true)) {
+                    // All components are present, use the full calculation
+                    finalGrade = weightedSum / 100;
+                } else {
+                    // Some components are missing, normalize by the total weight
+                    finalGrade = weightedSum / totalWeight;
+                }
+            } else {
+                finalGrade = 0;
+            }
+
             document.getElementById("result").innerText = finalGrade.toFixed(2) + "%";
             
             calculateNeededGrade(numQuarters, classType, weightedSum, totalWeight, desiredGrade, midtermWeight, finalExamWeight, quarterWeights, apHasFinal);
