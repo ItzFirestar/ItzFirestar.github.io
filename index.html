@@ -11,6 +11,9 @@ gtag('js', new Date());
 gtag('config', 'G-LNMT1VXJW1');
 </script>
 
+<!-- Replaced Google AdSense script with meta tag -->
+<meta name="google-adsense-account" content="ca-pub-5732988604780633">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grade Calculator</title>
@@ -126,6 +129,8 @@ gtag('config', 'G-LNMT1VXJW1');
   .nav-links li:nth-child(2) { animation-delay: 0.6s; }
   .nav-links li:nth-child(3) { animation-delay: 0.7s; }
   .nav-links li:nth-child(4) { animation-delay: 0.8s; }
+  .nav-links li:nth-child(5) { animation-delay: 0.9s; }
+  .nav-links li:nth-child(6) { animation-delay: 1.0s; }
 
   @keyframes slideInNav {
       to {
@@ -893,7 +898,7 @@ function calculateOptimalCombinations(currentWeightedSum, desiredGrade, isAPWith
   
   // Update strategy descriptions
   document.getElementById('strategy1Desc').innerText = 'This strategy minimizes your Quarter 4 grade while maximizing your Final Exam performance.';
-  document.getElementById('strategy2Desc').innerText = 'This strategy maximizes your Quarter 4 grade while minimizing your Final Exam performance.';
+  document.getElementById('strategy2Desc').innerText = 'This strategy maximizes your Quarter 4 grade while minimizing your Quarter 3 performance.';
   
   // Update labels - Ensure Q4 comes before Final Exam in display
   document.getElementById('minQ4Label').innerText = 'Quarter 4 (Minimum)';
@@ -1077,6 +1082,8 @@ function clearFields() {
               <li><a href="half_semester_calculator.html"><i class="fas fa-calendar-alt"></i> Half-Year Calculator</a></li>
               <li><a href="quarter_calculator.html"><i class="fas fa-percent"></i> Quarter Calculator</a></li>
               <li><a href="unweighted_gpa_calculator.html"><i class="fas fa-graduation-cap"></i> GPA Calculator</a></li>
+              <li><a href="terms-of-service.html"><i class="fas fa-file-contract"></i> Terms of Service</a></li>
+              <li><a href="privacy-policy.html"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
           </ul>
       </div>
   </nav>
@@ -1231,7 +1238,7 @@ function clearFields() {
           <div class="modal-body">
               <p>If you're part of a club, organization, or have something valuable to share with the school community, this space is for you. Submit your info - events, updates, sign-ups, or anything else - and we’ll display it here for everyone to see.</p>
               <p style="margin-top: 1rem;">Reach out to Advaith S by emailing as31819.</p>
-              <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary);">Terms & Conditions: <a href="https://docs.google.com/document/d/1fp5M_WUj-endh9G_lekxrO9LK7H1lZ4q9Sn6mUIOAXg/edit?usp=sharing" target="_blank" style="color: var(--link-color);">https://docs.google.com/document/d/1fp5M_WUj-endh9G_lekxrO9LK7H1lZ4q9Sn6mUIOAXg/edit?usp=sharing</a> By emailing to request it, you accept those Terms & Conditions</p>
+              <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary);">Terms of Service: <a href="terms-of-service.html" style="color: var(--link-color);">Terms of Service</a> By emailing to request it, you accept those Terms & Conditions</p>
               <button id="featureModalGotIt" class="btn-group" style="margin-top: 1.5rem; width: 100%;">Got it!</button>
           </div>
       </div>
