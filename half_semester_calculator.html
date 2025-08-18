@@ -103,6 +103,7 @@ gtag('config', 'G-LNMT1VXJW1');
     .nav-links li:nth-child(4) { animation-delay: 0.8s; }
     .nav-links li:nth-child(5) { animation-delay: 0.9s; }
     .nav-links li:nth-child(6) { animation-delay: 1.0s; }
+    .nav-links li:nth-child(7) { animation-delay: 1.1s; }
 
     @keyframes slideInNav {
         to {
@@ -361,6 +362,27 @@ gtag('config', 'G-LNMT1VXJW1');
             display: block;
         }
     }
+
+    .footer {
+        text-align: center;
+        padding: 1rem 0;
+        margin-top: 2rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        border-top: 1px solid var(--border-color); /* Added horizontal line separator above footer */
+    }
+
+    /* Added footer link styling to match other pages */
+    .footer a {
+        color: var(--link-color);
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+    .footer a:hover {
+        color: #90CAF9;
+        text-decoration: underline;
+    }
 </style>
 <script>
     function toggleMenu() {
@@ -529,6 +551,7 @@ gtag('config', 'G-LNMT1VXJW1');
             <li><a href="half_semester_calculator.html" class="active"><i class="fas fa-calendar-alt"></i> Half-Year Calculator</a></li>
             <li><a href="quarter_calculator.html"><i class="fas fa-percent"></i> Quarter Calculator</a></li>
             <li><a href="unweighted_gpa_calculator.html"><i class="fas fa-graduation-cap"></i> GPA Calculator</a></li>
+            <li><a href="popup-info.html"><i class="fas fa-info-circle"></i> Popup Info</a></li>
             <li><a href="terms-of-service.html"><i class="fas fa-file-contract"></i> Terms of Service</a></li>
             <li><a href="privacy-policy.html"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
         </ul>
@@ -620,9 +643,10 @@ gtag('config', 'G-LNMT1VXJW1');
         </div>
     </div>
 </div>
+<!-- Updated footer to include Terms of Service and Privacy Policy links -->
 <footer class="footer">
   <div class="container">
-      <p>Created by Advaith S, 2025</p>
+      <p>Created by Advaith S, 2025 | <a href="terms-of-service.html">Terms of Service</a> | <a href="privacy-policy.html">Privacy Policy</a></p>
   </div>
 </footer>
 </body>
