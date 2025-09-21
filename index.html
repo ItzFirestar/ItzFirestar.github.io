@@ -710,8 +710,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     featureModalGotItButton.addEventListener('click', function() {
-        hideModal(featureModalBackdrop, 'shownFeaturePopup');
-        checkAndStartAnimation();
+        featureModalGotItButton.disabled = true;
+        featureModalGotItButton.textContent = 'Please wait...';
+        
+        setTimeout(function() {
+            hideModal(featureModalBackdrop, 'shownFeaturePopup');
+            checkAndStartAnimation();
+        }, 2000); // Changed delay from 3000ms to 2000ms (2 seconds)
     });
 
     featureModalBackdrop.addEventListener('click', function(event) {
@@ -1407,7 +1412,7 @@ function clearFields() {
               <h3 id="featureModalTitle">Join SW Investing Club!</h3>
           </div>
           <div class="modal-body">
-              <p style="font-size: 1.1rem;">If you're someone who's interested in Investing, SW Investing Club is the place for you! First meeting on Thursday, Sept 26 in Room 163! Hope to see you there!</p>
+              <p style="font-size: 1.1rem;"> If you're someone who's interested in Investing, SW Investing Club is the place for you! First meeting on Thursday, Sept 26 in Room 163! Hope to see you there!</p>
               <hr style="margin: 1.5rem 0 1rem 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.2);">
               <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary);">If you want your content to be featured here, see the <a href="popup-info.html" style="color: var(--primary-color); text-decoration: none;">Popup Info page</a> for more information.</p>
               <button id="featureModalGotIt" class="btn-group" style="margin-top: 1.5rem; width: 100%;">Got it!</button>
