@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -405,6 +406,106 @@
       align-items: flex-end; /* Align inputs and labels nicely */
   }
 
+  /* Added styles for condensed/expanded assignment view toggle */
+  .condensed-assignments-container {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      background-color: var(--secondary-bg);
+      margin-bottom: 1.5rem;
+      /* Enhanced smooth transitions with GPU acceleration */
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.35s ease-in-out, transform 0.35s ease-in-out;
+      will-change: opacity, transform;
+  }
+  .condensed-assignments-container.hiding {
+      opacity: 0;
+      transform: translateY(-10px);
+  }
+
+  .condensed-assignments-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+  }
+
+  .condensed-assignments-table th,
+  .condensed-assignments-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+  }
+
+  .condensed-assignments-table th {
+      background-color: var(--input-bg);
+      color: var(--accent-color);
+      font-weight: 600;
+  }
+
+  .condensed-assignments-table tr:last-child td {
+      border-bottom: none;
+  }
+
+  .condensed-assignments-table tr:hover {
+      background-color: var(--highlight-bg);
+  }
+
+  .view-toggle-btn {
+      background-color: var(--link-color);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      min-width: 200px;
+  }
+
+  .view-toggle-btn:hover {
+      background-color: #42A5F5;
+  }
+
+  .view-toggle-btn i {
+      margin-right: 0.5rem;
+  }
+
+  /* Add animation classes for expanded view sections */
+  /* Enhanced animation classes for expanded view with GPU acceleration */
+  .assignment-section-animated {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.35s ease-in-out, transform 0.35s ease-in-out;
+      will-change: opacity, transform;
+  }
+
+  .assignment-section-animated.hiding {
+      opacity: 0;
+      transform: translateY(-10px);
+  }
+
+  .expanded-assignments-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background-color: var(--secondary-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+  }
+
+  .expanded-assignments-header h3 {
+      margin: 0;
+      color: var(--accent-color);
+  }
+
   /* Media query for mobile navigation */
   @media (max-width: 768px) {
       .nav-links {
@@ -545,6 +646,8 @@
 
   // Global variable to track the current view state
   let currentViewIsGrouped = false; 
+  let currentAssignmentView = 'expanded'; // 'condensed' or 'expanded'
+
 
   document.addEventListener('DOMContentLoaded', function() {
       // Add event listeners for Quarter Calculator
@@ -600,6 +703,21 @@
       document.getElementById('declineButton').addEventListener('click', function() {
           window.location.href = 'https://example.com/rejected.html';
       });
+
+      // Add PowerSchool parser button listener
+      const parseButton = document.getElementById('parsePowerschoolBtn');
+      if (parseButton) {
+        parseButton.addEventListener('click', processPowerSchoolText);
+      }
+
+      const expandViewBtn = document.getElementById('expandViewBtn');
+      const condenseViewBtn = document.getElementById('condenseViewBtn');
+      if (expandViewBtn) {
+        expandViewBtn.addEventListener('click', () => toggleAssignmentView('expanded'));
+      }
+      if (condenseViewBtn) {
+        condenseViewBtn.addEventListener('click', () => toggleAssignmentView('condensed'));
+      }
   });
 
   function toggleMenu() {
@@ -949,7 +1067,6 @@
       
       // Collect assignments and weights based on current view
       if (currentViewIsGrouped) {
-          // Group view - collect from separate categories
           const learnerTaskWeight = parseFloat(document.getElementById('learnerTasksWeight').value) || 0;
           const assessmentWeight = parseFloat(document.getElementById('assessmentsWeight').value) || 0;
           
@@ -1259,7 +1376,7 @@
     // Display for Needed Category Average
     if (categoryAverage > 100) {
       html += `<h3>Needed ${categoryName} Average: <span style="color: #f44336;">Not Possible</span></h3>
-               <p style="color: var(--text-secondary);">You need an average of ${categoryAverage.toFixed(2)}% in the ${categoryName} category, which is not achievable.</p>`;
+               <p style="color: var(--text-secondary);">You need to achieve an average of ${categoryAverage.toFixed(2)}% in the ${categoryName} category, which is not achievable.</p>`;
     } else if (categoryAverage < 0) {
       html += `<h3>Needed ${categoryName} Average: <span style="color: var(--accent-color);">Already Achieved!</span></h3>
                <p style="color: var(--text-secondary);">You have already reached or surpassed your desired grade.</p>`;
@@ -1313,7 +1430,7 @@
       toggleNeededGradeInputs(); // Reset visibility
 
       // Clear results container
-      document.getElementById('quarterResultsContainer').innerHTML = '';
+      document.getElementById('quarterResultsContainer').innerHTML = '<h3>Your Quarter Grade: <span id="quarterResultValue">Please enter grades and weights to calculate.</span></h3>';
 
       categoryCounters = {
           'learnerTasks': 0,
@@ -1329,8 +1446,379 @@
       // Explicitly set group view OFF after clearing
       document.getElementById('groupViewCheckbox').checked = false;
       toggleGroupView(false); 
+
+      // Reset assignment view to expanded and clear condensed view
+      currentAssignmentView = 'expanded';
+      document.getElementById('condensedAssignmentsContainer').style.display = 'none';
+      document.getElementById('expandedAssignmentsContainer').style.display = 'block';
+      document.getElementById('expandedAssignmentsHeader').style.display = 'none'; // Hide header if no assignments
+      document.getElementById('condensedAssignmentsTableBody').innerHTML = ''; // Clear table
       
       calculateQuarterGrade(); // Recalculate after clearing and setting initial view
+  }
+
+  // Regex patterns for parsing
+  const COL_SPLIT = /\t+|\s{2,}/;
+  const DATE_TOKEN = /^\d{1,2}\/\d{1,2}\/\d{2,4}$/;
+  const FRACTION = /(?<!\d)(\d{1,3}(?:\.\d+)?)\s*\/\s*(\d{1,3}(?:\.\d+)?)(?!\/\d)/g;
+  const PERCENT = /(?<!\d)(\d{1,3}(?:\.\d+)?)\s*%/;
+
+  const HEADER_HINTS = [
+    "Assignments",
+    "Due Date",
+    "View comments",
+    "Assignment Score Or Flag Last Updated"
+  ];
+
+  function looksLikeHeader(line) {
+    const s = line.trim();
+    if (!s) return true;
+    const low = s.toLowerCase();
+    return HEADER_HINTS.some(h => low.includes(h.toLowerCase()));
+  }
+
+  function fmtFull(x) {
+    if (Number.isNaN(x)) return "NaN";
+    let s = x.toFixed(15);
+    s = s.replace(/0+$/, "").replace(/\.$/, "");
+    return s || "0";
+  }
+
+  function parseRow(line) {
+    if (looksLikeHeader(line)) throw new Error("header");
+
+    const cols = line.split(COL_SPLIT).map(c => c.trim()).filter(c => c.length > 0);
+    if (cols.length === 0) throw new Error("empty");
+
+    const hasDate = DATE_TOKEN.test(cols[0]);
+    let category = "";
+
+    if (hasDate && cols.length >= 2) {
+      category = cols[1];
+    } else if (
+      cols.length >= 2 &&
+      ["learner tasks", "assessment"].includes(cols[0].toLowerCase())
+    ) {
+      category = cols[0];
+    } else {
+      const lc = line.toLowerCase();
+      if (lc.includes("assess")) category = "Assessment";
+      else if (lc.includes("learner")) category = "Learner Tasks";
+      else category = "Uncategorized";
+    }
+
+    // find last fraction
+    const fracs = [...line.matchAll(FRACTION)];
+    let earned = null;
+    let possible = null;
+
+    if (fracs.length > 0) {
+      const m = fracs[fracs.length - 1];
+      earned = parseFloat(m[1]);
+      possible = parseFloat(m[2]);
+    } else {
+      const mp = PERCENT.exec(line);
+      if (mp) {
+        const pct = parseFloat(mp[1]) / 100.0;
+        earned = pct * 100.0;
+        possible = 100.0;
+      }
+    }
+
+    if (earned == null || possible == null) throw new Error("no_score");
+    if (possible <= 0 || earned < 0 || earned > possible * 2)
+      throw new Error("bad_numbers");
+
+    return { category, earned, possible };
+  }
+
+  function parseTextBlock(text) {
+    const assignments = [];
+    const lines = text.split(/\r?\n/);
+
+    for (const raw of lines) {
+      const line = raw.trim().replace(/\u00A0/g, " ");
+      if (!line) continue;
+
+      try {
+        const { category, earned, possible } = parseRow(line);
+        assignments.push({ category, earned, possible, raw });
+      } catch {
+        continue;
+      }
+    }
+    return assignments;
+  }
+
+  function summarize(assignments) {
+    const e = assignments.reduce((sum, a) => sum + a.earned, 0);
+    const p = assignments.reduce((sum, a) => sum + a.possible, 0);
+    const pct = p ? e / p : 0.0;
+    return { e, p, pct };
+  }
+
+  function summarizeWeighted(assignments) {
+    const byCat = {};
+    for (const a of assignments) {
+      if (!byCat[a.category]) byCat[a.category] = { e: 0.0, p: 0.0 };
+      byCat[a.category].e += a.earned;
+      byCat[a.category].p += a.possible;
+    }
+
+    const weights = { Assessment: 0.8, "Learner Tasks": 0.2 };
+    let total = 0.0;
+    const details = [];
+
+    for (const [cat, w] of Object.entries(weights)) {
+      const e = byCat[cat]?.e || 0.0;
+      const p = byCat[cat]?.p || 0.0;
+      const avg = p > 0 ? e / p : 0.0;
+      total += avg * w;
+      details.push({ cat, avg, w });
+    }
+
+    return { total, details };
+  }
+
+  function processPowerSchoolText() {
+    const inputText = document.getElementById('powerschoolInput').value;
+    const outputContainer = document.getElementById('powerschoolOutput');
+    const statusContainer = document.getElementById('powerschoolStatus');
+    
+    statusContainer.innerHTML = '';
+    
+    if (!inputText.trim()) {
+      statusContainer.innerHTML = '<p style="color: #f44336;">Please paste some text to parse.</p>';
+      return;
+    }
+
+    const assignments = parseTextBlock(inputText);
+
+    if (!assignments.length) {
+      statusContainer.innerHTML = '<p style="color: #f44336;">No valid scores found.</p>';
+      return;
+    }
+
+    autofillAssignmentsFromParsed(assignments);
+    
+    statusContainer.innerHTML = `<p style="color: var(--accent-color);">✓ Successfully imported ${assignments.length} assignment${assignments.length !== 1 ? 's' : ''}!</p>`;
+    
+    setTimeout(() => {
+      statusContainer.innerHTML = '';
+    }, 3000);
+  }
+
+  function autofillAssignmentsFromParsed(assignments) {
+    // Clear existing assignments first
+    clearQuarterFields();
+    
+    // Determine if we should use group view or single view
+    // For simplicity, we'll use single assignment view since it's more flexible
+    document.getElementById('groupViewCheckbox').checked = false;
+    toggleGroupView(false);
+    
+    // Set default weights for Learner Tasks and Assessments
+    document.getElementById('overallLearnerTaskWeight').value = '20';
+    document.getElementById('overallAssessmentWeight').value = '80';
+    
+    // Add each parsed assignment to the form
+    assignments.forEach(assignment => {
+        // Add a new assignment row
+        addAssignmentInput('assignments');
+        
+        // Get the most recently added assignment row
+        const container = document.getElementById('assignmentsAssignments');
+        const rows = container.querySelectorAll('.class-input-row');
+        const lastRow = rows[rows.length - 1];
+        
+        // Fill in the earned points
+        const earnedInput = lastRow.querySelector('.assignment-grade-input');
+        if (earnedInput) {
+            earnedInput.value = assignment.earned;
+        }
+        
+        // Fill in the possible points
+        const possibleInput = lastRow.querySelector('.assignment-possible-input');
+        if (possibleInput) {
+            possibleInput.value = assignment.possible;
+        }
+        
+        // Set the assignment type based on category
+        const typeSelect = lastRow.querySelector('.assignment-type-select');
+        if (typeSelect) {
+            const category = assignment.category.toLowerCase();
+            if (category.includes('learner')) {
+                typeSelect.value = 'Learner Tasks';
+            } else if (category.includes('assess')) {
+                typeSelect.value = 'Assessments';
+            } else {
+                typeSelect.value = 'Custom';
+                // If custom, show the custom weight input and set a default
+                toggleCustomWeightInput(lastRow, 'Custom');
+                const customWeightInput = lastRow.querySelector('.assignment-custom-weight-input');
+                if (customWeightInput) {
+                    customWeightInput.value = '100';
+                }
+            }
+        }
+    });
+    
+    populateCondensedView(assignments);
+    toggleAssignmentView('condensed');
+    
+    // calculateQuarterGrade();
+    
+    document.getElementById('quarterResultsContainer').innerHTML = '<h3>Your Quarter Grade: <span id="quarterResultValue">Please enter grades and weights to calculate.</span></h3>';
+    
+    // Scroll to the assignments section to show the condensed view
+    const condensedContainer = document.getElementById('condensedAssignmentsContainer');
+    if (condensedContainer) {
+        condensedContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+  function populateCondensedView(assignments) {
+      const tableBody = document.getElementById('condensedAssignmentsTableBody');
+      if (!tableBody) return;
+      
+      tableBody.innerHTML = ''; // Clear existing rows
+      
+      assignments.forEach((assignment, index) => {
+          const row = document.createElement('tr');
+          
+          // Assignment number
+          const numCell = document.createElement('td');
+          numCell.textContent = index + 1;
+          row.appendChild(numCell);
+          
+          // Type
+          const typeCell = document.createElement('td');
+          const category = assignment.category.toLowerCase();
+          if (category.includes('learner')) {
+              typeCell.textContent = 'Learner Task';
+          } else if (category.includes('assess')) {
+              typeCell.textContent = 'Assessment';
+          } else {
+              typeCell.textContent = 'Custom';
+          }
+          row.appendChild(typeCell);
+          
+          // Points
+          const pointsCell = document.createElement('td');
+          pointsCell.textContent = `${assignment.earned} / ${assignment.possible}`;
+          row.appendChild(pointsCell);
+          
+          // Percentage
+          const percentCell = document.createElement('td');
+          const percentage = (assignment.earned / assignment.possible * 100).toFixed(2);
+          percentCell.textContent = `${percentage}%`;
+          row.appendChild(percentCell);
+          
+          tableBody.appendChild(row);
+      });
+  }
+
+  function toggleAssignmentView(viewType) {
+      currentAssignmentView = viewType;
+      
+      const condensedContainer = document.getElementById('condensedAssignmentsContainer');
+      const expandedContainer = document.getElementById('expandedAssignmentsContainer');
+      const expandedHeader = document.getElementById('expandedAssignmentsHeader');
+      const condenseViewBtn = document.getElementById('condenseViewBtn');
+
+      if (viewType === 'condensed') {
+          // Hide expanded view with animation
+          if (expandedContainer) {
+              const assignmentSections = expandedContainer.querySelectorAll('.checkbox-option-container, #overallWeightsSection, #groupedCategories, #singleAssignmentCategory');
+              assignmentSections.forEach(section => {
+                  section.classList.add('hiding');
+              });
+          }
+          if (expandedHeader) {
+              expandedHeader.style.opacity = '0';
+              expandedHeader.style.transform = 'translateY(-10px)';
+              expandedHeader.style.transition = 'opacity 0.35s ease-in-out, transform 0.35s ease-in-out';
+          }
+          if (condenseViewBtn) condenseViewBtn.style.display = 'none';
+
+          // After animation completes, show condensed view
+          setTimeout(() => {
+              if (expandedContainer) {
+                  const assignmentSections = expandedContainer.querySelectorAll('.checkbox-option-container, #overallWeightsSection, #groupedCategories, #singleAssignmentCategory');
+                  assignmentSections.forEach(section => {
+                      section.style.display = 'none';
+                      section.classList.remove('hiding');
+                  });
+              }
+              if (expandedHeader) expandedHeader.style.display = 'none';
+              
+              // Show condensed with animation
+              if (condensedContainer) {
+                  condensedContainer.style.display = 'block';
+                  // Force reflow to ensure animation plays
+                  void condensedContainer.offsetWidth;
+                  condensedContainer.classList.remove('hiding');
+              }
+          }, 350);
+      } else {
+          // Hide condensed view with animation
+          if (condensedContainer) {
+              condensedContainer.classList.add('hiding');
+          }
+
+          // After animation completes, show expanded view
+          setTimeout(() => {
+              if (condensedContainer) condensedContainer.style.display = 'none';
+              
+              if (expandedContainer) {
+                  // Show checkboxes with animation
+                  const checkboxes = expandedContainer.querySelectorAll('.checkbox-option-container');
+                  checkboxes.forEach(checkbox => {
+                      checkbox.style.display = 'flex';
+                      // Force reflow to ensure animation plays
+                      void checkbox.offsetWidth;
+                      checkbox.classList.remove('hiding');
+                  });
+                  
+                  // Show/hide based on group view state
+                  const groupView = document.getElementById('groupViewCheckbox').checked;
+                  const overallWeights = document.getElementById('overallWeightsSection');
+                  const groupedCategories = document.getElementById('groupedCategories');
+                  const singleCategory = document.getElementById('singleAssignmentCategory');
+                  
+                  if (overallWeights) {
+                      overallWeights.style.display = groupView ? 'none' : 'flex';
+                      if (!groupView) void overallWeights.offsetWidth;
+                      overallWeights.classList.remove('hiding');
+                  }
+                  if (groupedCategories) {
+                      groupedCategories.style.display = groupView ? 'block' : 'none';
+                      if (groupView) void groupedCategories.offsetWidth;
+                      groupedCategories.classList.remove('hiding');
+                  }
+                  if (singleCategory) {
+                      singleCategory.style.display = groupView ? 'none' : 'block';
+                      if (!groupView) void singleCategory.offsetWidth;
+                      singleCategory.classList.remove('hiding');
+                  }
+              }
+              
+              // Show expanded header with fade-in
+              const assignmentRows = document.querySelectorAll('#assignmentsAssignments .class-input-row');
+              if (expandedHeader && assignmentRows.length > 0) {
+                  expandedHeader.style.display = 'flex';
+                  expandedHeader.style.opacity = '0';
+                  expandedHeader.style.transform = 'translateY(-10px)';
+                  // Force reflow
+                  void expandedHeader.offsetWidth;
+                  setTimeout(() => {
+                      expandedHeader.style.opacity = '1';
+                      expandedHeader.style.transform = 'translateY(0)';
+                  }, 10);
+              }
+              if (condenseViewBtn) condenseViewBtn.style.display = 'block';
+          }, 350);
+      }
   }
 </script>
 </head>
@@ -1382,115 +1870,182 @@
 </nav>
 
 <div class="container">
+  <!-- Moved PowerSchool Parser card to top, renamed from "PowerSchool Document Parser" to "PowerSchool Parser" -->
+  <div class="card" style="padding: 1rem; margin: 1rem 0;">
+      <h2 style="font-size: 1.3rem; margin-bottom: 0.75rem;">PowerSchool Parser</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 0.75rem; text-align: center; font-size: 0.9rem;">
+          Paste text from your PowerSchool gradebook to automatically fill in assignments. <strong> Make sure to use CTRL+SHIFT+V. </strong>
+      </p>
+
+      <div class="form-group" style="margin-bottom: 0.75rem;">
+          <textarea 
+              id="powerschoolInput" 
+              rows="4" 
+              style="background-color: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 5px; padding: 0.5rem; width: 100%; font-size: 0.9rem; font-family: monospace; resize: vertical;"
+              placeholder="Paste PowerSchool text here..."></textarea>
+      </div>
+
+      <div class="btn-group" style="margin: 0;">
+          <button id="parsePowerschoolBtn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+              <i class="fas fa-file-import"></i> Parse and Fill
+          </button>
+      </div>
+
+      <!-- Hidden output display, will show brief success message instead -->
+      <div id="powerschoolOutput" style="display: none;"></div>
+      <div id="powerschoolStatus" style="margin-top: 0.5rem; text-align: center; font-size: 0.9rem;"></div>
+  </div>
+
   <div class="card">
       <h2>Quarter Grade Calculator</h2>
       <p style="color: var(--text-secondary); margin-bottom: 1.5rem; text-align: center;">
           Calculate your quarter grade by entering grades for different assignment categories and their weights.
       </p>
       
-      <!-- Group View Checkbox (New) -->
-      <div class="checkbox-option-container">
-          <input type="checkbox" id="groupViewCheckbox">
-          <label for="groupViewCheckbox">Group View</label>
-      </div>
-
-      <!-- Show Assignment Names Checkbox -->
-      <div class="checkbox-option-container">
-          <input type="checkbox" id="showAssignmentNamesCheckbox" checked>
-          <label for="showAssignmentNamesCheckbox">Show Assignment Names</label>
-      </div>
-
-      <!-- Overall Weights Section (visible when Group View is OFF) -->
-      <div id="overallWeightsSection" class="overall-weights-section">
-          <div class="input-group">
-              <label for="overallLearnerTaskWeight">Learner Task Weight (%)</label>
-              <input type="number" id="overallLearnerTaskWeight" min="0" max="100" placeholder="e.g., 20">
-          </div>
-          <div class="input-group">
-              <label for="overallAssessmentWeight">Assessment Weight (%)</label>
-              <input type="number" id="overallAssessmentWeight" min="0" max="100" placeholder="e.g., 80">
-          </div>
-      </div>
-
-      <!-- Grouped Categories Section (Hidden by Default) -->
-      <div id="groupedCategories" style="display: none;">
-          <!-- Learner Tasks Category -->
-          <div class="category-section">
-              <div class="category-header">
-                  <h3>Learner Tasks</h3>
-                  <div class="input-group">
-                      <label for="learnerTasksWeight">Weight (%)</label>
-                      <input type="number" id="learnerTasksWeight" min="0" max="100" value="20" placeholder="e.g., 20">
-                  </div>
-              </div>
-              <div id="learnerTasksAssignments" class="assignment-inputs">
-                  <!-- Learner Tasks assignment inputs will be added here -->
-              </div>
-              <button id="addLearnerTasksBtn" style="margin-top: 1rem;">
-                  <i class="fas fa-plus-circle"></i> Add Learner Task Grade
-              </button>
-          </div>
-
-          <!-- Assessments Category -->
-          <div class="category-section">
-              <div class="category-header">
-                  <h3>Assessments</h3>
-                  <div class="input-group">
-                      <label for="assessmentsWeight">Weight (%)</label>
-                      <input type="number" id="assessmentsWeight" min="0" max="100" value="80" placeholder="e.g., 80">
-                  </div>
-              </div>
-              <div id="assessmentsAssignments" class="assignment-inputs">
-                  <!-- Assessments assignment inputs will be added here -->
-              </div>
-              <button id="addAssessmentsBtn" style="margin-top: 1rem;">
-                  <i class="fas fa-plus-circle"></i> Add Assessment Grade
-              </button>
-          </div>
-
-          <!-- Custom Category -->
-          <div class="category-section">
-              <div class="category-header">
-                  <h3>Custom</h3>
-                  <!-- Removed the overall weight input for Custom category -->
-              </div>
-              <div id="customAssignments" class="assignment-inputs">
-                  <!-- Custom assignment inputs will be added here -->
-              </div>
-              <button id="addCustomBtn" style="margin-top: 1rem;">
-                  <i class="fas fa-plus-circle"></i> Add Custom Grade
-              </button>
-          </div>
-      </div>
-
-      <!-- Single Assignment Category Section (Default) -->
-      <div id="singleAssignmentCategory">
-          <div class="category-section">
-              <div class="category-header">
-                  <h3>Assignments</h3>
-                  <!-- The overall weight input for "Assignments" category is now removed -->
-              </div>
-              <div id="assignmentsAssignments" class="assignment-inputs">
-                  <!-- Single assignment inputs will be added here -->
-              </div>
-              <button id="addAssignmentBtn" style="margin-top: 1rem;">
-                  <i class="fas fa-plus-circle"></i> Add Assignment Grade
-              </button>
-          </div>
-      </div>
-      
-      <div class="btn-group">
-          <button id="calculateQuarterBtn">
-              <i class="fas fa-calculator"></i> Calculate Quarter Grade
+      <!-- Moved condensed assignments container outside expanded container -->
+      <!-- Added condensed assignments view container -->
+      <div id="condensedAssignmentsContainer" class="condensed-assignments-container" style="display: none;">
+          <h3 style="text-align: center; margin-bottom: 1rem;">Parsed Assignments Summary</h3>
+          <table class="condensed-assignments-table">
+              <thead>
+                  <tr>
+                      <th>#</th>
+                      <th>Type</th>
+                      <th>Points</th>
+                      <th>Percentage</th>
+                  </tr>
+              </thead>
+              <tbody id="condensedAssignmentsTableBody">
+                  <!-- Condensed assignment rows will be added here -->
+              </tbody>
+          </table>
+          
+          <button id="expandViewBtn" class="view-toggle-btn">
+              <i class="fas fa-chevron-down"></i> Show More
           </button>
-          <button class="btn-clear" id="clearQuarterFieldsBtn">
-              <i class="fas fa-trash-alt"></i> Clear All Fields
-          </button>
+          
+          <!-- CHANGE: Moved Calculate/Clear buttons and results to be shared outside both views -->
       </div>
-      
-      <div class="result-section">
-          <div id="quarterResultsContainer">
-              <!-- Results will be displayed here -->
+
+      <!-- Wrapped existing assignment sections in expanded container -->
+      <div id="expandedAssignmentsContainer">
+          <!-- Removed "Show Less" button from header, will move to bottom of assignments -->
+          <div class="expanded-assignments-header" style="display: none;" id="expandedAssignmentsHeader">
+              <h3>All Assignment Details</h3>
+          </div>
+
+          <!-- Group View Checkbox (New) -->
+          <div class="checkbox-option-container">
+              <input type="checkbox" id="groupViewCheckbox">
+              <label for="groupViewCheckbox">Group View</label>
+          </div>
+
+          <!-- Show Assignment Names Checkbox -->
+          <div class="checkbox-option-container">
+              <input type="checkbox" id="showAssignmentNamesCheckbox" checked>
+              <label for="showAssignmentNamesCheckbox">Show Assignment Names</label>
+          </div>
+
+          <!-- Overall Weights Section (visible when Group View is OFF) -->
+          <div id="overallWeightsSection" class="overall-weights-section">
+              <div class="input-group">
+                  <label for="overallLearnerTaskWeight">Learner Task Weight (%)</label>
+                  <input type="number" id="overallLearnerTaskWeight" min="0" max="100" placeholder="e.g., 20">
+              </div>
+              <div class="input-group">
+                  <label for="overallAssessmentWeight">Assessment Weight (%)</label>
+                  <input type="number" id="overallAssessmentWeight" min="0" max="100" placeholder="e.g., 80">
+              </div>
+          </div>
+
+          <!-- Grouped Categories Section (Hidden by Default) -->
+          <div id="groupedCategories" style="display: none;">
+              <!-- Learner Tasks Category -->
+              <div class="category-section">
+                  <div class="category-header">
+                      <h3>Learner Tasks</h3>
+                      <div class="input-group">
+                          <label for="learnerTasksWeight">Weight (%)</label>
+                          <input type="number" id="learnerTasksWeight" min="0" max="100" value="20" placeholder="e.g., 20">
+                      </div>
+                  </div>
+                  <div id="learnerTasksAssignments" class="assignment-inputs">
+                      <!-- Learner Tasks assignment inputs will be added here -->
+                  </div>
+                  <button id="addLearnerTasksBtn" style="margin-top: 1rem;">
+                      <i class="fas fa-plus-circle"></i> Add Learner Task Grade
+                  </button>
+              </div>
+
+              <!-- Assessments Category -->
+              <div class="category-section">
+                  <div class="category-header">
+                      <h3>Assessments</h3>
+                      <div class="input-group">
+                          <label for="assessmentsWeight">Weight (%)</label>
+                          <input type="number" id="assessmentsWeight" min="0" max="100" value="80" placeholder="e.g., 80">
+                      </div>
+                  </div>
+                  <div id="assessmentsAssignments" class="assignment-inputs">
+                      <!-- Assessments assignment inputs will be added here -->
+                  </div>
+                  <button id="addAssessmentsBtn" style="margin-top: 1rem;">
+                      <i class="fas fa-plus-circle"></i> Add Assessment Grade
+                  </button>
+              </div>
+
+              <!-- Custom Category -->
+              <div class="category-section">
+                  <div class="category-header">
+                      <h3>Custom</h3>
+                      <!-- Removed the overall weight input for Custom category -->
+                  </div>
+                  <div id="customAssignments" class="assignment-inputs">
+                      <!-- Custom assignment inputs will be added here -->
+                  </div>
+                  <button id="addCustomBtn" style="margin-top: 1rem;">
+                      <i class="fas fa-plus-circle"></i> Add Custom Grade
+                  </button>
+              </div>
+          </div>
+
+          <!-- Single Assignment Category Section (Default) -->
+          <div id="singleAssignmentCategory">
+              <div class="category-section">
+                  <div class="category-header">
+                      <h3>Assignments</h3>
+                      <!-- The overall weight input for "Assignments" category is now removed -->
+                  </div>
+                  <div id="assignmentsAssignments" class="assignment-inputs">
+                      <!-- Single assignment inputs will be added here -->
+                  </div>
+                  <button id="addAssignmentBtn" style="margin-top: 1rem;">
+                      <i class="fas fa-plus-circle"></i> Add Assignment Grade
+                  </button>
+              </div>
+          </div>
+          
+          <!-- Added "Show Less" button here, after all assignment fields but before Calculate/Clear buttons -->
+          <div style="text-align: center; margin: 1.5rem 0;">
+              <button id="condenseViewBtn" class="view-toggle-btn" style="min-width: 150px;">
+                  <i class="fas fa-chevron-up"></i> Show Less
+              </button>
+          </div>
+          
+          <div class="btn-group">
+              <button id="calculateQuarterBtn">
+                  <i class="fas fa-calculator"></i> Calculate Quarter Grade
+              </button>
+              <button class="btn-clear" id="clearQuarterFieldsBtn">
+                  <i class="fas fa-trash-alt"></i> Clear All Fields
+              </button>
+          </div>
+          
+          <div class="result-section">
+              <div id="quarterResultsContainer">
+                  <!-- CHANGE: Initial state with placeholder text -->
+                  <h3>Your Quarter Grade: <span id="quarterResultValue">Please enter grades and weights to calculate.</span></h3>
+              </div>
           </div>
       </div>
   </div>
